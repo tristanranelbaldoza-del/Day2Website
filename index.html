@@ -37,7 +37,16 @@
 
     body {
       font-family: 'Montserrat', sans-serif;
-      background-color: #080100;
+      /* Brand-aligned dark: warm near-black base with layered gold radial
+         washes, echoing the gold shimmer in the Tester.io brand guidelines.
+         Attachment: fixed so the glow stays ambient while content scrolls. */
+      background-color: #0E0A03;
+      background-image:
+        radial-gradient(ellipse 70% 55% at 88% -10%, rgba(230,185,121,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 45% at 12% 18%, rgba(198,165,89,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 60% at 50% 120%, rgba(198,165,89,0.05) 0%, transparent 65%),
+        linear-gradient(180deg, rgba(20,14,5,0.35) 0%, transparent 45%, transparent 60%, rgba(14,10,3,0.55) 100%);
+      background-attachment: fixed;
       color: #f5ead6;
       overflow-x: hidden;
       width: 100%;
