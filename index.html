@@ -33,7 +33,6 @@
     html {
       scroll-behavior: smooth;
       overflow-x: hidden;
-      max-width: 100vw;
     }
 
     body {
@@ -41,10 +40,9 @@
       background-color: #080100;
       color: #f5ead6;
       overflow-x: hidden;
-      max-width: 100vw;
       width: 100%;
     }
-    main, section, header, footer, nav { max-width: 100vw; }
+    main, section, header, footer, nav { max-width: 100%; }
 
     /* ── Volcano canvas (fixed background) ── */
     #volcano-canvas {
@@ -281,7 +279,6 @@
       border-radius: 20px;
       padding: 32px 24px;
       position: relative;
-      overflow: hidden;
       transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
     }
     .pricing-card:hover {
@@ -302,12 +299,24 @@
       .pricing-card.featured { transform: scale(1.04); }
       .pricing-card.featured:hover { transform: scale(1.04) translateY(-6px); }
     }
+
+    /* Center orphan card in 2-col grid (between sm and lg breakpoints) */
+    @media (min-width: 640px) and (max-width: 1023px) {
+      .orphan-center > *:nth-child(3):last-child {
+        grid-column: 1 / -1;
+        justify-self: center;
+        max-width: calc(50% - 12px);
+        width: 100%;
+      }
+    }
     .pricing-card.featured::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 2px;
       background: linear-gradient(90deg, transparent 0%, #C6A559 30%, #E6B979 50%, #C6A559 70%, transparent 100%);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
     }
     .pricing-card.featured::after {
       content: '';
@@ -315,6 +324,7 @@
       top: 0; left: 0; right: 0; bottom: 0;
       background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(198,165,89,0.08) 0%, transparent 70%);
       pointer-events: none;
+      border-radius: 20px;
     }
 
     /* ── Reusable display heading ── */
@@ -400,15 +410,43 @@
     .stat-card {
       background: linear-gradient(160deg, rgba(22,15,5,0.95) 0%, rgba(12,8,2,0.98) 100%);
       border: 1px solid rgba(198,165,89,0.14);
-      border-radius: 14px;
-      padding: 20px 12px;
+      border-radius: clamp(12px, 1.5vw, 16px);
+      padding: clamp(14px, 2.5vw, 28px) clamp(8px, 2vw, 24px);
       text-align: center;
       position: relative;
       overflow: hidden;
       transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      min-width: 0;
+    }
+    .stat-number {
+      font-size: clamp(1.5rem, 6cqi, 2.5rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: clamp(2px, 0.4vw, 8px);
+      white-space: nowrap;
+      background: linear-gradient(135deg, #C6A559 0%, #E6B979 50%, #C6A559 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: clamp(0.6rem, 2cqi, 0.875rem);
+      font-weight: 500;
+      color: rgba(245,234,214,0.5);
+      line-height: 1.3;
+    }
+    /* Use container query for smoother scaling */
+    .stat-card { container-type: inline-size; }
+
+    /* Stats grid: scale up column count as width increases */
+    .stats-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: 100%;
+      max-width: 100%;
     }
     @media (min-width: 640px) {
-      .stat-card { padding: 28px 24px; border-radius: 16px; }
+      .stats-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     }
     .stat-card::before {
       content: '';
@@ -945,7 +983,7 @@
     </div>
 
     <!-- Hero browser mockup -->
-    <div class="relative z-10 max-w-5xl mx-auto mt-20 fade-up">
+    <div class="relative z-10 max-w-5xl mx-auto mt-12 md:mt-20 fade-up hidden sm:block">
       <div class="rounded-2xl overflow-hidden border border-[rgba(198,165,89,0.2)]"
            style="box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(198,165,89,0.08);">
         <!-- Browser chrome -->
@@ -1048,24 +1086,24 @@
   <!-- ════════════════════════════════
        STATS
   ════════════════════════════════ -->
-  <section class="py-14 md:py-24 px-5 sm:px-6 glow-section">
+  <section class="py-14 md:py-24 px-5 sm:px-6 glow-section overflow-hidden">
     <div class="max-w-5xl mx-auto">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="stats-grid grid gap-3 sm:gap-4">
         <div class="stat-card fade-up">
-          <div class="text-3xl sm:text-4xl font-900 gold-text mb-2 display-heading">10M+</div>
-          <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Tests Run Monthly</div>
+          <div class="stat-number gold-text">10M+</div>
+          <div class="stat-label">Tests Run Monthly</div>
         </div>
         <div class="stat-card fade-up">
-          <div class="text-3xl sm:text-4xl font-900 gold-text mb-2 display-heading">99.9%</div>
-          <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Platform Uptime</div>
+          <div class="stat-number gold-text">99.9%</div>
+          <div class="stat-label">Platform Uptime</div>
         </div>
         <div class="stat-card fade-up">
-          <div class="text-3xl sm:text-4xl font-900 gold-text mb-2 display-heading">60%</div>
-          <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Faster Releases</div>
+          <div class="stat-number gold-text">60%</div>
+          <div class="stat-label">Faster Releases</div>
         </div>
         <div class="stat-card fade-up">
-          <div class="text-3xl sm:text-4xl font-900 gold-text mb-2 display-heading">10k+</div>
-          <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Teams Onboarded</div>
+          <div class="stat-number gold-text">10k+</div>
+          <div class="stat-label">Teams Onboarded</div>
         </div>
       </div>
     </div>
@@ -1192,7 +1230,7 @@
         </p>
       </div>
 
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 relative">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 relative orphan-center">
         <!-- Step 1 -->
         <div class="feature-card flex flex-col items-center text-center fade-up" style="border-color:rgba(198,165,89,0.18);">
           <div class="step-number mb-6 relative z-10">1</div>
@@ -1394,7 +1432,7 @@
         </p>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6 pt-4">
+      <div class="grid md:grid-cols-3 gap-6 pt-5 md:pt-8">
         <!-- Starter -->
         <div class="pricing-card fade-up">
           <div class="mb-6">
@@ -1522,7 +1560,7 @@
         </h2>
       </div>
 
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 orphan-center">
         <div class="testimonial-card fade-up">
           <div class="stars text-sm mb-4">★★★★★</div>
           <p class="text-[rgba(245,234,214,0.75)] text-sm leading-[1.7] mb-6">
@@ -1611,9 +1649,9 @@
   ════════════════════════════════ -->
   <footer class="border-t border-[rgba(198,165,89,0.1)] px-5 sm:px-6 pt-12 md:pt-16 pb-8">
     <div class="max-w-7xl mx-auto">
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10 md:gap-8 lg:gap-12 mb-12 md:mb-16">
+      <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10 lg:gap-12 mb-12 md:mb-16">
         <!-- Brand col -->
-        <div class="col-span-2 md:col-span-4 lg:col-span-2">
+        <div class="sm:col-span-3 lg:col-span-2">
           <a href="#" class="flex items-center gap-3 mb-4">
             <img src="tester-logo.png" alt="Tester.io" class="h-8 w-auto" />
             <span class="text-lg font-bold tracking-tight" style="color:#f5ead6;">
