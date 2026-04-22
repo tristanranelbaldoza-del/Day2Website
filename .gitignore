@@ -1,3 +1,10 @@
 temporary screenshots/
 *.DS_Store
 .claude/
+
+# Local tooling (portable ffmpeg binary, ~91 MB, macOS-specific)
+.tools/
+
+# Local env secrets
+.env
+.env.*
