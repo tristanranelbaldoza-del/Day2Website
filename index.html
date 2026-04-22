@@ -619,6 +619,90 @@
     }
     .pb-dialog-close:hover { background: rgba(0,0,0,0.85); }
 
+    /* Chat history */
+    .chat-history {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding: 4px 2px 20px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(198,165,89,0.2) transparent;
+    }
+    .chat-msg {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .chat-msg-user { flex-direction: row-reverse; }
+    .chat-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .chat-avatar-ai {
+      background: linear-gradient(135deg, #C6A559, #E6B979);
+      color: #080100;
+    }
+    .chat-avatar-user {
+      background: rgba(198,165,89,0.18);
+      color: #C6A559;
+      border: 1px solid rgba(198,165,89,0.3);
+    }
+    .chat-bubble {
+      max-width: 88%;
+      padding: 12px 16px;
+      font-size: 13.5px;
+      line-height: 1.7;
+      font-family: 'Montserrat', sans-serif;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .chat-bubble-user {
+      background: rgba(198,165,89,0.12);
+      border: 1px solid rgba(198,165,89,0.22);
+      color: #f5ead6;
+      border-radius: 18px 18px 4px 18px;
+      font-weight: 500;
+    }
+    .chat-bubble-ai {
+      background: #1e1e1e;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.85);
+      border-radius: 18px 18px 18px 4px;
+      font-weight: 400;
+      font-family: 'IBM Plex Mono', 'Courier New', monospace;
+      font-size: 12.5px;
+    }
+    .chat-cursor {
+      display: inline-block;
+      width: 2px; height: 13px;
+      background: #C6A559;
+      margin-left: 1px;
+      vertical-align: text-bottom;
+      animation: cur-blink 0.65s steps(1) infinite;
+    }
+    @keyframes cur-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .chat-thinking {
+      display: flex; gap: 5px; align-items: center;
+      padding: 14px 18px;
+      background: #1e1e1e;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px 18px 18px 4px;
+    }
+    .chat-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(198,165,89,0.6);
+      animation: dot-bounce 1.2s ease-in-out infinite;
+    }
+    .chat-dot:nth-child(2) { animation-delay: 0.2s; }
+    .chat-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot-bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+
     /* Suggestion chips */
     .prompt-suggestion {
       display: inline-flex;
@@ -1072,6 +1156,9 @@
           Tell our AI what you want to test in plain English — it writes, runs, and reports on every scenario automatically.
         </p>
       </div>
+
+      <!-- Chat history (hidden until first message) -->
+      <div id="chat-history" class="chat-history" style="display:none"></div>
 
       <!-- Prompt Box Component -->
       <form id="prompt-form" autocomplete="off" class="fade-up">
@@ -1879,13 +1966,135 @@
         });
       });
 
-      // Form submit
+      // ── Smart response engine ──────────────────────────────────────
+      const RESPONSES = {
+        login: `Analyzing your React app's login flow...\n\nHere's your generated Playwright test suite:\n\nimport { test, expect } from '@playwright/test';\n\ntest('login — happy path', async ({ page }) => {\n  await page.goto('/login');\n  await page.fill('[name="email"]', 'user@example.com');\n  await page.fill('[name="password"]', 'Password123!');\n  await page.click('button[type="submit"]');\n  await expect(page).toHaveURL('/dashboard');\n  await expect(page.getByRole('heading')).toContainText('Welcome');\n});\n\ntest('login — wrong credentials', async ({ page }) => {\n  await page.goto('/login');\n  await page.fill('[name="email"]', 'bad@example.com');\n  await page.fill('[name="password"]', 'wrongpass');\n  await page.click('button[type="submit"]');\n  await expect(page.getByRole('alert')).toBeVisible();\n});\n\ntest('session persists after refresh', async ({ page }) => {\n  // ... login flow ...\n  await page.reload();\n  await expect(page).not.toHaveURL('/login');\n});\n\n✓ 3 tests generated  ✓ All passed in 4.2s  ✓ Coverage: 94%`,
+
+        api: `Scanning your API routes... found 6 endpoints in /api/checkout\n\nGenerating test suite with Supertest:\n\nimport request from 'supertest';\nimport { app } from '../app';\n\ndescribe('Checkout API', () => {\n  test('POST /checkout — creates order', async () => {\n    const res = await request(app)\n      .post('/api/checkout')\n      .set('Authorization', \`Bearer \${token}\`)\n      .send({ items: [{ id: 'sku_001', qty: 2 }] });\n\n    expect(res.status).toBe(201);\n    expect(res.body).toHaveProperty('orderId');\n    expect(res.body.status).toBe('pending');\n  });\n\n  test('POST /checkout — rejects empty cart', async () => {\n    const res = await request(app)\n      .post('/api/checkout')\n      .send({ items: [] });\n    expect(res.status).toBe(400);\n  });\n});\n\n✓ 8 tests generated  ✓ Covers auth, validation & edge cases  ✓ Ran in 1.8s`,
+
+        flaky: `Scanning your test suite for flakiness patterns...\n\nFound 4 unstable tests:\n  ✗ UserDashboard > renders notifications  (timing)\n  ✗ Checkout > applies coupon code  (race condition)\n  ✗ Auth > refreshes token on expiry  (async teardown)\n  ✗ Search > filters by date  (timezone sensitivity)\n\nRoot causes:\n  1. Hard-coded sleeps → replace with waitFor()\n  2. Shared state between tests → add beforeEach cleanup\n  3. Network stubs not reset → use afterEach to restore\n  4. Date.now() calls → mock with jest.useFakeTimers()\n\nApplying fixes and re-running...\n\n✓ 4/4 flaky tests now stable\n✓ Suite reliability: 98.3% → 100%\n✓ Avg run time reduced by 2.1s`,
+
+        cicd: `Setting up GitHub Actions CI/CD pipeline...\n\nCreating .github/workflows/test.yml:\n\nname: Test Suite\non: [push, pull_request]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with: { node-version: '20' }\n      - run: npm ci\n      - run: npm test -- --coverage\n      - run: npx playwright install --with-deps\n      - run: npx playwright test\n      - uses: actions/upload-artifact@v4\n        if: failure()\n        with:\n          name: playwright-report\n          path: playwright-report/\n\n✓ Workflow committed to main\n✓ Runs on every PR automatically\n✓ Coverage gate: 80% minimum enforced\n✓ Reports uploaded on failure`,
+
+        performance: `Running performance analysis...\n\nBaseline metrics:\n  • TTFB: 340ms\n  • LCP: 2.8s  ⚠ above 2.5s target\n  • TBT: 180ms\n  • Bundle: 847KB gzipped → 230KB\n\nGenerating k6 load test:\n\nimport http from 'k6/http';\nimport { check, sleep } from 'k6';\n\nexport const options = {\n  stages: [\n    { duration: '30s', target: 20 },\n    { duration: '1m',  target: 100 },\n    { duration: '30s', target: 0 },\n  ],\n};\n\nexport default function () {\n  const res = http.get('https://your-app.com');\n  check(res, { 'status 200': r => r.status === 200 });\n  sleep(1);\n}\n\n✓ 100 concurrent users simulated\n✓ p95 latency: 420ms  ✓ Zero errors`,
+
+        mobile: `Detecting mobile framework... React Native / Expo found.\n\nConfiguring Detox for iOS + Android:\n\ndescribe('Checkout on mobile', () => {\n  beforeAll(async () => {\n    await device.launchApp({ newInstance: true });\n  });\n\n  it('completes purchase on iOS', async () => {\n    await element(by.id('product-card-1')).tap();\n    await element(by.id('add-to-cart')).tap();\n    await element(by.id('checkout-btn')).tap();\n    await expect(\n      element(by.text('Order confirmed'))\n    ).toBeVisible();\n  });\n});\n\nRunning on simulators...\n  ✓ iPhone 16 Pro  (iOS 18)   — passed\n  ✓ Pixel 9        (Android 15) — passed\n  ✓ Galaxy S24     (Android 14) — passed\n\n✓ 12 scenarios  ✓ 3 devices  ✓ 100% pass rate`,
+
+        security: `Running security test suite...\n\nScanning for OWASP Top 10 vulnerabilities:\n\n  ✓ SQL Injection — 0 vulnerabilities found\n  ✓ XSS — 2 inputs sanitized (auto-patched)\n  ⚠ Broken Auth — JWT expiry not enforced on /api/admin\n  ✓ Sensitive Data Exposure — TLS 1.3, no leaks\n  ✓ CORS — properly configured\n  ⚠ Rate Limiting — missing on /api/login endpoint\n\nGenerating fixes...\n\n// Add to your Express app:\napp.use('/api/login', rateLimit({\n  windowMs: 15 * 60 * 1000,\n  max: 10,\n  message: 'Too many attempts'\n}));\n\n✓ 2 issues flagged  ✓ Patches generated  ✓ Re-scan: 0 critical`,
+
+        unit: `Generating unit tests for your codebase...\n\nScanning source files... found 24 functions without coverage.\n\nExample output for calculateDiscount.js:\n\nimport { calculateDiscount } from './calculateDiscount';\n\ndescribe('calculateDiscount', () => {\n  test('applies 10% discount correctly', () => {\n    expect(calculateDiscount(100, 10)).toBe(90);\n  });\n\n  test('returns 0 for 100% discount', () => {\n    expect(calculateDiscount(50, 100)).toBe(0);\n  });\n\n  test('throws on negative price', () => {\n    expect(() => calculateDiscount(-10, 5)).toThrow();\n  });\n\n  test('handles zero amount', () => {\n    expect(calculateDiscount(0, 20)).toBe(0);\n  });\n});\n\n✓ 87 unit tests generated\n✓ Coverage: 62% → 94%\n✓ All passing`,
+
+        default: `Analyzing your request and designing a test strategy...\n\nRecommended coverage plan:\n\n  1. Unit Tests (Jest)\n     → Business logic, utils, hooks\n     → Target: 90%+ coverage\n\n  2. Integration Tests (Supertest)\n     → API routes, DB queries\n     → All critical data paths\n\n  3. End-to-End Tests (Playwright)\n     → Signup, checkout, dashboard flows\n     → Chrome, Firefox, Safari\n\n  4. Visual Regression (Percy)\n     → Key UI components\n     → Diff on every PR\n\nGenerating test files now...\n\n✓ 47 tests written across 4 layers\n✓ Full suite runs in 3m 12s\n✓ 100% pass rate on first run\n✓ CI/CD workflow created`
+      };
+
+      function pickResponse(msg) {
+        const m = msg.toLowerCase();
+        if (/log.?in|sign.?in|auth|password|credential/.test(m)) return RESPONSES.login;
+        if (/api|endpoint|rest|graphql|request|checkout/.test(m)) return RESPONSES.api;
+        if (/flak|unstable|intermittent|fail|random/.test(m)) return RESPONSES.flaky;
+        if (/ci|cd|pipeline|github action|deploy|workflow/.test(m)) return RESPONSES.cicd;
+        if (/perf|load|stress|speed|latency|slow|lcp|ttfb/.test(m)) return RESPONSES.performance;
+        if (/mobile|ios|android|react native|expo|detox/.test(m)) return RESPONSES.mobile;
+        if (/secur|xss|sql inject|owasp|vulnerab|penetrat/.test(m)) return RESPONSES.security;
+        if (/unit|jest|vitest|function|component/.test(m)) return RESPONSES.unit;
+        return RESPONSES.default;
+      }
+
+      // ── Chat UI ────────────────────────────────────────────────────
+      const chatHistory = document.getElementById('chat-history');
+
+      function addUserMessage(text) {
+        chatHistory.style.display = 'flex';
+        const msg = document.createElement('div');
+        msg.className = 'chat-msg chat-msg-user';
+        msg.innerHTML = `
+          <div class="chat-avatar chat-avatar-user">U</div>
+          <div class="chat-bubble chat-bubble-user">${text.replace(/</g,'&lt;')}</div>`;
+        chatHistory.appendChild(msg);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+      }
+
+      function addThinking() {
+        const msg = document.createElement('div');
+        msg.className = 'chat-msg';
+        msg.id = 'chat-thinking';
+        msg.innerHTML = `
+          <div class="chat-avatar chat-avatar-ai">T</div>
+          <div class="chat-thinking">
+            <div class="chat-dot"></div>
+            <div class="chat-dot"></div>
+            <div class="chat-dot"></div>
+          </div>`;
+        chatHistory.appendChild(msg);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        return msg;
+      }
+
+      function streamResponse(text, onDone) {
+        document.getElementById('chat-thinking')?.remove();
+        const msg = document.createElement('div');
+        msg.className = 'chat-msg';
+        msg.innerHTML = `
+          <div class="chat-avatar chat-avatar-ai">T</div>
+          <div class="chat-bubble chat-bubble-ai"><span id="stream-text"></span><span class="chat-cursor"></span></div>`;
+        chatHistory.appendChild(msg);
+
+        const target = msg.querySelector('#stream-text');
+        const cursor = msg.querySelector('.chat-cursor');
+        let i = 0;
+
+        function typeNext() {
+          if (i >= text.length) {
+            cursor.remove();
+            if (onDone) onDone();
+            return;
+          }
+          // stream a few chars at a time for speed
+          const chunk = text.slice(i, i + 2);
+          target.textContent += chunk;
+          i += chunk.length;
+          chatHistory.scrollTop = chatHistory.scrollHeight;
+          // variable speed: slower at sentence ends, faster mid-word
+          const ch = text[i - 1];
+          const delay = ch === '\n' ? 18 : ch === '.' || ch === ',' ? 30 : 12;
+          setTimeout(typeNext, delay);
+        }
+        typeNext();
+      }
+
+      // ── Form submit ────────────────────────────────────────────────
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (!textarea.value.trim() && !hasImage) return;
-        // Simulate send feedback
+        const msg = textarea.value.trim();
+        if (!msg && !hasImage) return;
+
+        // UI feedback
         sendBtn.style.transform = 'scale(0.88)';
         setTimeout(() => { sendBtn.style.transform = ''; }, 150);
+
+        // Clear textarea
+        textarea.value = '';
+        textarea.style.height = 'auto';
+        previewImg.src = '';
+        imgPreview.classList.remove('visible');
+        hasImage = false;
+        updateSend();
+
+        // Scroll section into view
+        document.getElementById('ai-demo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        addUserMessage(msg);
+
+        // Short delay then show thinking dots
+        const thinkEl = addThinking();
+        void thinkEl;
+
+        const response = pickResponse(msg);
+        const thinkTime = 800 + Math.random() * 600;
+
+        setTimeout(() => {
+          streamResponse(response, null);
+        }, thinkTime);
       });
 
       // Click on box focuses textarea
