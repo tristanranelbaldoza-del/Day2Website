@@ -296,6 +296,8 @@
     @media (min-width: 768px) {
       .feature-card { padding: 32px; }
       .pricing-card { padding: 40px 32px; }
+    }
+    @media (min-width: 1024px) {
       .pricing-card.featured { transform: scale(1.04); }
       .pricing-card.featured:hover { transform: scale(1.04) translateY(-6px); }
     }
@@ -1434,7 +1436,7 @@
         </p>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6 pt-5 md:pt-8">
+      <div class="grid lg:grid-cols-3 gap-6 max-w-lg lg:max-w-none mx-auto pt-5 lg:pt-8">
         <!-- Starter -->
         <div class="pricing-card fade-up">
           <div class="mb-6">
