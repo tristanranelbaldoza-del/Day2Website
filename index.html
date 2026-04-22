@@ -223,11 +223,11 @@
 
     /* ── Cards ── */
     .feature-card {
-      background: linear-gradient(145deg, rgba(30,21,8,0.9) 0%, rgba(20,14,5,0.95) 100%);
-      border: 1px solid rgba(198, 165, 89, 0.15);
-      border-radius: 12px;
+      background: linear-gradient(160deg, rgba(24,16,5,0.97) 0%, rgba(12,8,2,0.99) 100%);
+      border: 1px solid rgba(198,165,89,0.13);
+      border-radius: 16px;
       padding: 32px;
-      transition: border-color 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+      transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
       position: relative;
       overflow: hidden;
     }
@@ -236,44 +236,71 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(198,165,89,0.4), transparent);
-      opacity: 0;
-      transition: opacity 0.25s ease;
+      background: linear-gradient(90deg, transparent, rgba(198,165,89,0.55), transparent);
+      opacity: 0.35;
+      transition: opacity 0.3s ease;
+    }
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(198,165,89,0.04) 0%, transparent 70%);
+      pointer-events: none;
     }
     .feature-card:hover {
-      border-color: rgba(198, 165, 89, 0.35);
-      transform: translateY(-4px);
-      box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(198,165,89,0.1);
+      border-color: rgba(198,165,89,0.4);
+      transform: translateY(-6px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(198,165,89,0.12), 0 0 40px rgba(198,165,89,0.06);
     }
     .feature-card:hover::before { opacity: 1; }
 
     .icon-wrap {
-      width: 52px; height: 52px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, rgba(198,165,89,0.2) 0%, rgba(230,185,121,0.08) 100%);
-      border: 1px solid rgba(198,165,89,0.25);
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(198,165,89,0.22) 0%, rgba(230,185,121,0.06) 100%);
+      border: 1px solid rgba(198,165,89,0.3);
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 20px;
       flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(198,165,89,0.12), inset 0 1px 0 rgba(255,255,255,0.04);
     }
 
     /* ── Pricing cards ── */
     .pricing-card {
-      background: linear-gradient(145deg, rgba(30,21,8,0.9) 0%, rgba(20,14,5,0.95) 100%);
-      border: 1px solid rgba(198, 165, 89, 0.15);
-      border-radius: 16px;
+      background: linear-gradient(160deg, rgba(22,15,5,0.97) 0%, rgba(12,8,2,0.99) 100%);
+      border: 1px solid rgba(198,165,89,0.12);
+      border-radius: 20px;
       padding: 40px 32px;
       position: relative;
-      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
     }
     .pricing-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.55);
     }
     .pricing-card.featured {
-      border-color: rgba(198,165,89,0.5);
-      background: linear-gradient(145deg, rgba(40,28,10,0.95) 0%, rgba(25,17,5,0.98) 100%);
-      box-shadow: 0 0 0 1px rgba(198,165,89,0.15), 0 8px 32px rgba(198,165,89,0.12);
+      border-color: rgba(198,165,89,0.55);
+      background: linear-gradient(160deg, rgba(48,32,10,0.98) 0%, rgba(28,18,5,0.99) 100%);
+      box-shadow:
+        0 0 0 1px rgba(198,165,89,0.2),
+        0 16px 64px rgba(198,165,89,0.18),
+        0 0 120px rgba(198,165,89,0.06);
+    }
+    .pricing-card.featured::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, #C6A559 30%, #E6B979 50%, #C6A559 70%, transparent 100%);
+    }
+    .pricing-card.featured::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(198,165,89,0.08) 0%, transparent 70%);
+      pointer-events: none;
     }
 
     /* ── Reusable display heading ── */
@@ -285,13 +312,30 @@
 
     /* ── Testimonials ── */
     .testimonial-card {
-      background: linear-gradient(145deg, rgba(30,21,8,0.9) 0%, rgba(20,14,5,0.95) 100%);
-      border: 1px solid rgba(198, 165, 89, 0.12);
-      border-radius: 12px;
-      padding: 28px;
-      transition: border-color 0.25s ease;
+      background: linear-gradient(160deg, rgba(22,15,5,0.97) 0%, rgba(12,8,2,0.99) 100%);
+      border: 1px solid rgba(198,165,89,0.12);
+      border-radius: 18px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
     }
-    .testimonial-card:hover { border-color: rgba(198,165,89,0.3); }
+    .testimonial-card::before {
+      content: '\201C';
+      position: absolute;
+      top: 16px; right: 24px;
+      font-size: 96px;
+      line-height: 1;
+      font-family: Georgia, serif;
+      color: rgba(198,165,89,0.1);
+      pointer-events: none;
+      font-weight: 900;
+    }
+    .testimonial-card:hover {
+      border-color: rgba(198,165,89,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 56px rgba(0,0,0,0.45), 0 0 40px rgba(198,165,89,0.05);
+    }
 
     /* ── Divider ── */
     .gold-divider {
@@ -307,29 +351,53 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 16px;
-      background: rgba(198,165,89,0.1);
-      border: 1px solid rgba(198,165,89,0.25);
+      padding: 6px 18px;
+      background: rgba(198,165,89,0.08);
+      border: 1px solid rgba(198,165,89,0.28);
       border-radius: 100px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: #E6B979;
+      color: #C6A559;
       margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(198,165,89,0.06);
     }
 
     /* ── Step numbers ── */
     .step-number {
-      width: 48px; height: 48px;
+      width: 52px; height: 52px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #C6A559, #E6B979);
+      background: linear-gradient(135deg, #C6A559 0%, #E6B979 100%);
       display: flex; align-items: center; justify-content: center;
       font-size: 18px;
       font-weight: 800;
       color: #0E0A03;
       flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(198,165,89,0.4);
+      box-shadow: 0 6px 24px rgba(198,165,89,0.45), 0 0 0 6px rgba(198,165,89,0.08);
+    }
+
+    /* ── Stat card ── */
+    .stat-card {
+      background: linear-gradient(160deg, rgba(22,15,5,0.95) 0%, rgba(12,8,2,0.98) 100%);
+      border: 1px solid rgba(198,165,89,0.14);
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(198,165,89,0.4), transparent);
+    }
+    .stat-card:hover {
+      border-color: rgba(198,165,89,0.3);
+      transform: translateY(-3px);
     }
 
     /* ── Check list ── */
@@ -942,14 +1010,14 @@
   ════════════════════════════════ -->
   <section class="py-16 px-6 border-y border-[rgba(198,165,89,0.1)]">
     <div class="max-w-6xl mx-auto">
-      <p class="text-center text-xs font-600 text-[rgba(245,234,214,0.35)] uppercase tracking-widest mb-10">Trusted by teams at</p>
-      <div class="flex flex-wrap items-center justify-center gap-x-16 gap-y-6">
-        <span class="text-xl font-700 text-[rgba(245,234,214,0.2)] hover:text-[rgba(198,165,89,0.5)] transition-colors duration-300" style="letter-spacing:-0.02em;">Stripe</span>
-        <span class="text-xl font-700 text-[rgba(245,234,214,0.2)] hover:text-[rgba(198,165,89,0.5)] transition-colors duration-300" style="letter-spacing:-0.02em;">Shopify</span>
-        <span class="text-xl font-700 text-[rgba(245,234,214,0.2)] hover:text-[rgba(198,165,89,0.5)] transition-colors duration-300" style="letter-spacing:-0.02em;">Vercel</span>
-        <span class="text-xl font-700 text-[rgba(245,234,214,0.2)] hover:text-[rgba(198,165,89,0.5)] transition-colors duration-300" style="letter-spacing:-0.02em;">Figma</span>
-        <span class="text-xl font-700 text-[rgba(245,234,214,0.2)] hover:text-[rgba(198,165,89,0.5)] transition-colors duration-300" style="letter-spacing:-0.02em;">Linear</span>
-        <span class="text-xl font-700 text-[rgba(245,234,214,0.2)] hover:text-[rgba(198,165,89,0.5)] transition-colors duration-300" style="letter-spacing:-0.02em;">Notion</span>
+      <p class="text-center text-xs font-700 text-[rgba(245,234,214,0.4)] uppercase tracking-widest mb-10">Trusted by teams at</p>
+      <div class="flex flex-wrap items-center justify-center gap-x-14 gap-y-5">
+        <span class="text-lg font-800 text-[rgba(245,234,214,0.32)] hover:text-[rgba(198,165,89,0.75)] transition-colors duration-300 cursor-default" style="letter-spacing:-0.02em;">Stripe</span>
+        <span class="text-lg font-800 text-[rgba(245,234,214,0.32)] hover:text-[rgba(198,165,89,0.75)] transition-colors duration-300 cursor-default" style="letter-spacing:-0.02em;">Shopify</span>
+        <span class="text-lg font-800 text-[rgba(245,234,214,0.32)] hover:text-[rgba(198,165,89,0.75)] transition-colors duration-300 cursor-default" style="letter-spacing:-0.02em;">Vercel</span>
+        <span class="text-lg font-800 text-[rgba(245,234,214,0.32)] hover:text-[rgba(198,165,89,0.75)] transition-colors duration-300 cursor-default" style="letter-spacing:-0.02em;">Figma</span>
+        <span class="text-lg font-800 text-[rgba(245,234,214,0.32)] hover:text-[rgba(198,165,89,0.75)] transition-colors duration-300 cursor-default" style="letter-spacing:-0.02em;">Linear</span>
+        <span class="text-lg font-800 text-[rgba(245,234,214,0.32)] hover:text-[rgba(198,165,89,0.75)] transition-colors duration-300 cursor-default" style="letter-spacing:-0.02em;">Notion</span>
       </div>
     </div>
   </section>
@@ -960,21 +1028,20 @@
   ════════════════════════════════ -->
   <section class="py-24 px-6 glow-section">
     <div class="max-w-5xl mx-auto">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-0 rounded-2xl overflow-hidden border border-[rgba(198,165,89,0.15)]"
-           style="background:linear-gradient(145deg,rgba(30,21,8,0.9),rgba(20,14,5,0.95));">
-        <div class="p-8 text-center border-r border-b md:border-b-0 border-[rgba(198,165,89,0.1)] fade-up">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="stat-card fade-up">
           <div class="text-4xl font-900 gold-text mb-2 display-heading">10M+</div>
           <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Tests Run Monthly</div>
         </div>
-        <div class="p-8 text-center border-b md:border-b-0 md:border-r border-[rgba(198,165,89,0.1)] fade-up">
+        <div class="stat-card fade-up">
           <div class="text-4xl font-900 gold-text mb-2 display-heading">99.9%</div>
           <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Platform Uptime</div>
         </div>
-        <div class="p-8 text-center border-r border-[rgba(198,165,89,0.1)] fade-up">
+        <div class="stat-card fade-up">
           <div class="text-4xl font-900 gold-text mb-2 display-heading">60%</div>
           <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Faster Releases</div>
         </div>
-        <div class="p-8 text-center fade-up">
+        <div class="stat-card fade-up">
           <div class="text-4xl font-900 gold-text mb-2 display-heading">10k+</div>
           <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Teams Onboarded</div>
         </div>
@@ -1103,13 +1170,9 @@
         </p>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-8 relative">
-        <!-- Connector line -->
-        <div class="hidden md:block absolute top-6 left-1/6 right-1/6 h-px"
-             style="background:linear-gradient(90deg, transparent, rgba(198,165,89,0.4) 50%, transparent); top: 24px; left: 16.7%; right: 16.7%;"></div>
-
+      <div class="grid md:grid-cols-3 gap-6 relative">
         <!-- Step 1 -->
-        <div class="flex flex-col items-center text-center fade-up">
+        <div class="feature-card flex flex-col items-center text-center fade-up" style="border-color:rgba(198,165,89,0.18);">
           <div class="step-number mb-6 relative z-10">1</div>
           <h3 class="text-xl font-700 mb-3" style="color:#f5ead6;">Connect Your Repo</h3>
           <p class="text-[rgba(245,234,214,0.55)] text-sm leading-[1.7]">
@@ -1118,7 +1181,7 @@
         </div>
 
         <!-- Step 2 -->
-        <div class="flex flex-col items-center text-center fade-up">
+        <div class="feature-card flex flex-col items-center text-center fade-up" style="border-color:rgba(198,165,89,0.18);">
           <div class="step-number mb-6 relative z-10">2</div>
           <h3 class="text-xl font-700 mb-3" style="color:#f5ead6;">Write or Import Tests</h3>
           <p class="text-[rgba(245,234,214,0.55)] text-sm leading-[1.7]">
@@ -1127,7 +1190,7 @@
         </div>
 
         <!-- Step 3 -->
-        <div class="flex flex-col items-center text-center fade-up">
+        <div class="feature-card flex flex-col items-center text-center fade-up" style="border-color:rgba(198,165,89,0.18);">
           <div class="step-number mb-6 relative z-10">3</div>
           <h3 class="text-xl font-700 mb-3" style="color:#f5ead6;">Ship with Confidence</h3>
           <p class="text-[rgba(245,234,214,0.55)] text-sm leading-[1.7]">
@@ -1347,10 +1410,10 @@
         </div>
 
         <!-- Pro (featured) -->
-        <div class="pricing-card featured fade-up" style="transform: scale(1.02);">
-          <div class="absolute -top-4 left-1/2 -translate-x-1/2">
-            <span class="px-4 py-1.5 rounded-full text-xs font-700 text-[#0E0A03]"
-                  style="background:linear-gradient(135deg,#C6A559,#E6B979); letter-spacing:0.06em; text-transform:uppercase;">Most Popular</span>
+        <div class="pricing-card featured fade-up" style="transform: scale(1.04); z-index:2;">
+          <div class="absolute -top-4 left-1/2 -translate-x-1/2" style="z-index:3;">
+            <span class="px-5 py-1.5 rounded-full text-xs font-700 text-[#0E0A03]"
+                  style="background:linear-gradient(135deg,#C6A559,#E6B979); letter-spacing:0.08em; text-transform:uppercase; box-shadow:0 4px 16px rgba(198,165,89,0.4);">⚡ Most Popular</span>
           </div>
           <div class="mb-6">
             <div class="text-xs font-600 text-[rgba(198,165,89,0.7)] uppercase tracking-widest mb-2">Pro</div>
@@ -1490,10 +1553,16 @@
   <section class="py-28 px-6">
     <div class="max-w-4xl mx-auto">
       <div class="rounded-3xl p-16 text-center relative overflow-hidden"
-           style="background:linear-gradient(145deg,rgba(40,28,10,0.95),rgba(25,17,5,0.98)); border:1px solid rgba(198,165,89,0.25); box-shadow:0 0 80px rgba(198,165,89,0.08);">
+           style="background:linear-gradient(160deg,rgba(48,32,10,0.98),rgba(20,13,3,0.99)); border:1px solid rgba(198,165,89,0.3); box-shadow:0 0 0 1px rgba(198,165,89,0.08), 0 40px 120px rgba(198,165,89,0.12), 0 0 200px rgba(198,165,89,0.04);">
+        <!-- Top accent line -->
+        <div class="absolute top-0 left-0 right-0 h-px pointer-events-none"
+             style="background:linear-gradient(90deg,transparent 5%,#C6A559 35%,#E6B979 50%,#C6A559 65%,transparent 95%);"></div>
         <!-- Glow -->
         <div class="absolute inset-0 pointer-events-none"
-             style="background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(198,165,89,0.12) 0%, transparent 70%);"></div>
+             style="background:radial-gradient(ellipse 70% 55% at 50% 0%, rgba(198,165,89,0.14) 0%, transparent 65%);"></div>
+        <!-- Subtle bottom glow -->
+        <div class="absolute inset-0 pointer-events-none"
+             style="background:radial-gradient(ellipse 50% 40% at 50% 100%, rgba(180,40,0,0.08) 0%, transparent 70%);"></div>
         <div class="relative z-10">
           <div class="section-label fade-up">Start Today</div>
           <h2 class="text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
