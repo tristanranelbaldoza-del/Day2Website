@@ -30,14 +30,21 @@
   <style>
     /* ── Reset & Base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
 
     body {
       font-family: 'Montserrat', sans-serif;
       background-color: #080100;
       color: #f5ead6;
       overflow-x: hidden;
+      max-width: 100vw;
+      width: 100%;
     }
+    main, section, header, footer, nav { max-width: 100vw; }
 
     /* ── Volcano canvas (fixed background) ── */
     #volcano-canvas {
@@ -227,7 +234,7 @@
       background: linear-gradient(160deg, rgba(24,16,5,0.97) 0%, rgba(12,8,2,0.99) 100%);
       border: 1px solid rgba(198,165,89,0.13);
       border-radius: 16px;
-      padding: 32px;
+      padding: 24px;
       transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
       position: relative;
       overflow: hidden;
@@ -272,7 +279,7 @@
       background: linear-gradient(160deg, rgba(22,15,5,0.97) 0%, rgba(12,8,2,0.99) 100%);
       border: 1px solid rgba(198,165,89,0.12);
       border-radius: 20px;
-      padding: 40px 32px;
+      padding: 32px 24px;
       position: relative;
       overflow: hidden;
       transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
@@ -288,6 +295,12 @@
         0 0 0 1px rgba(198,165,89,0.2),
         0 16px 64px rgba(198,165,89,0.18),
         0 0 120px rgba(198,165,89,0.06);
+    }
+    @media (min-width: 768px) {
+      .feature-card { padding: 32px; }
+      .pricing-card { padding: 40px 32px; }
+      .pricing-card.featured { transform: scale(1.04); }
+      .pricing-card.featured:hover { transform: scale(1.04) translateY(-6px); }
     }
     .pricing-card.featured::before {
       content: '';
@@ -307,8 +320,13 @@
     /* ── Reusable display heading ── */
     .display-heading {
       font-weight: 900;
-      letter-spacing: -0.03em;
-      line-height: 1;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      overflow-wrap: normal;
+      word-break: keep-all;
+    }
+    @media (min-width: 768px) {
+      .display-heading { letter-spacing: -0.03em; line-height: 1; }
     }
 
     /* ── Testimonials ── */
@@ -382,12 +400,15 @@
     .stat-card {
       background: linear-gradient(160deg, rgba(22,15,5,0.95) 0%, rgba(12,8,2,0.98) 100%);
       border: 1px solid rgba(198,165,89,0.14);
-      border-radius: 16px;
-      padding: 28px 24px;
+      border-radius: 14px;
+      padding: 20px 12px;
       text-align: center;
       position: relative;
       overflow: hidden;
       transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @media (min-width: 640px) {
+      .stat-card { padding: 28px 24px; border-radius: 16px; }
     }
     .stat-card::before {
       content: '';
@@ -820,7 +841,7 @@
       </a>
 
       <!-- Desktop nav -->
-      <div class="hidden md:flex items-center gap-8">
+      <div class="hidden lg:flex items-center gap-8">
         <a href="#features" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">Features</a>
         <a href="#how-it-works" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">How It Works</a>
         <a href="#pricing" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">Pricing</a>
@@ -828,13 +849,13 @@
       </div>
 
       <!-- CTA -->
-      <div class="hidden md:flex items-center gap-4">
+      <div class="hidden lg:flex items-center gap-4">
         <a href="#" class="text-sm font-semibold text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">Log In</a>
         <a href="#" class="btn-primary" style="padding: 10px 24px; font-size: 13px;">Get Started</a>
       </div>
 
       <!-- Hamburger -->
-      <button id="hamburger" class="md:hidden p-2 rounded-md text-[#c9b882] hover:text-[#E6B979] transition-colors" aria-label="Open menu">
+      <button id="hamburger" class="lg:hidden p-2 rounded-md text-[#c9b882] hover:text-[#E6B979] transition-colors" aria-label="Open menu">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
@@ -858,7 +879,7 @@
   <!-- ════════════════════════════════
        HERO
   ════════════════════════════════ -->
-  <section class="glow-hero relative pt-40 pb-32 px-6 text-center overflow-hidden">
+  <section class="glow-hero relative pt-28 pb-20 md:pt-40 md:pb-32 px-5 sm:px-6 text-center overflow-hidden">
     <!-- Volcanic glow orbs -->
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full opacity-25 blur-3xl pointer-events-none"
          style="background: radial-gradient(ellipse, rgba(220,60,0,0.7) 0%, rgba(198,100,20,0.3) 40%, transparent 70%);"></div>
@@ -883,16 +904,16 @@
         Trusted by 10,000+ QA Engineers
       </div>
 
-      <h1 class="text-5xl md:text-7xl font-900 leading-none display-heading mb-6 fade-up">
+      <h1 class="text-[34px] leading-[1.1] sm:text-5xl md:text-6xl lg:text-7xl sm:leading-[1.05] md:leading-none font-900 display-heading mb-6 fade-up">
         Ship Faster.<br/>
         <span class="gold-text">Break Nothing.</span>
       </h1>
 
-      <p class="text-lg md:text-xl text-[rgba(245,234,214,0.65)] max-w-2xl mx-auto mb-10 fade-up leading-[1.7]">
+      <p class="text-base sm:text-lg md:text-xl text-[rgba(245,234,214,0.65)] max-w-2xl mx-auto mb-8 md:mb-10 fade-up leading-[1.7]">
         Tester.io gives your team the automated testing infrastructure to catch bugs before users do — across web, mobile, and API layers simultaneously.
       </p>
 
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 fade-up">
+      <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 md:gap-4 mb-12 md:mb-16 fade-up max-w-md sm:max-w-none mx-auto">
         <a href="#" class="btn-primary" style="font-size:15px; padding:16px 40px;">
           Get Started Free
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
@@ -908,7 +929,7 @@
       </div>
 
       <!-- Social proof avatars -->
-      <div class="flex items-center justify-center gap-4 fade-up">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 fade-up">
         <div class="flex -space-x-3">
           <img src="https://placehold.co/40x40/2A1E0D/E6B979?text=J" alt="" class="w-10 h-10 rounded-full border-2 border-[#0E0A03]" />
           <img src="https://placehold.co/40x40/3A2B14/C6A559?text=M" alt="" class="w-10 h-10 rounded-full border-2 border-[#0E0A03]" />
@@ -916,7 +937,7 @@
           <img src="https://placehold.co/40x40/1E1508/C6A559?text=S" alt="" class="w-10 h-10 rounded-full border-2 border-[#0E0A03]" />
           <img src="https://placehold.co/40x40/3A2B14/E6B979?text=K" alt="" class="w-10 h-10 rounded-full border-2 border-[#0E0A03]" />
         </div>
-        <div class="text-left">
+        <div class="text-center sm:text-left">
           <div class="stars text-sm">★★★★★</div>
           <p class="text-xs text-[rgba(245,234,214,0.55)] font-medium mt-0.5">Loved by 10,000+ teams worldwide</p>
         </div>
@@ -1009,7 +1030,7 @@
   <!-- ════════════════════════════════
        LOGO BAR
   ════════════════════════════════ -->
-  <section class="py-16 px-6 border-y border-[rgba(198,165,89,0.1)]">
+  <section class="py-12 md:py-16 px-5 sm:px-6 border-y border-[rgba(198,165,89,0.1)]">
     <div class="max-w-6xl mx-auto">
       <p class="text-center text-xs font-700 text-[rgba(245,234,214,0.4)] uppercase tracking-widest mb-10">Trusted by teams at</p>
       <div class="flex flex-wrap items-center justify-center gap-x-14 gap-y-5">
@@ -1027,23 +1048,23 @@
   <!-- ════════════════════════════════
        STATS
   ════════════════════════════════ -->
-  <section class="py-24 px-6 glow-section">
+  <section class="py-14 md:py-24 px-5 sm:px-6 glow-section">
     <div class="max-w-5xl mx-auto">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="stat-card fade-up">
-          <div class="text-4xl font-900 gold-text mb-2 display-heading">10M+</div>
+          <div class="text-3xl sm:text-4xl font-900 gold-text mb-2 display-heading">10M+</div>
           <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Tests Run Monthly</div>
         </div>
         <div class="stat-card fade-up">
-          <div class="text-4xl font-900 gold-text mb-2 display-heading">99.9%</div>
+          <div class="text-3xl sm:text-4xl font-900 gold-text mb-2 display-heading">99.9%</div>
           <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Platform Uptime</div>
         </div>
         <div class="stat-card fade-up">
-          <div class="text-4xl font-900 gold-text mb-2 display-heading">60%</div>
+          <div class="text-3xl sm:text-4xl font-900 gold-text mb-2 display-heading">60%</div>
           <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Faster Releases</div>
         </div>
         <div class="stat-card fade-up">
-          <div class="text-4xl font-900 gold-text mb-2 display-heading">10k+</div>
+          <div class="text-3xl sm:text-4xl font-900 gold-text mb-2 display-heading">10k+</div>
           <div class="text-sm text-[rgba(245,234,214,0.5)] font-500">Teams Onboarded</div>
         </div>
       </div>
@@ -1054,19 +1075,19 @@
   <!-- ════════════════════════════════
        FEATURES
   ════════════════════════════════ -->
-  <section id="features" class="py-28 px-6">
+  <section id="features" class="py-16 md:py-28 px-5 sm:px-6">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-16">
         <div class="section-label fade-up">Features</div>
-        <h2 class="text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
-          Everything your QA team<br/>needs in one place
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
+          Everything your QA team<br class="hidden sm:inline"/> needs in one place
         </h2>
         <p class="text-lg text-[rgba(245,234,214,0.55)] max-w-2xl mx-auto fade-up leading-[1.7]">
           From writing your first test to running thousands in parallel — Tester.io scales with your ambition.
         </p>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
         <!-- Card 1 -->
         <div class="feature-card fade-up">
           <div class="icon-wrap">
@@ -1159,19 +1180,19 @@
   <!-- ════════════════════════════════
        HOW IT WORKS
   ════════════════════════════════ -->
-  <section id="how-it-works" class="py-28 px-6 glow-section">
+  <section id="how-it-works" class="py-16 md:py-28 px-5 sm:px-6 glow-section">
     <div class="max-w-6xl mx-auto">
       <div class="text-center mb-20">
         <div class="section-label fade-up">How It Works</div>
-        <h2 class="text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
-          Up and running<br/><span class="gold-text">in three steps</span>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
+          Up and running<br class="hidden sm:inline"/> <span class="gold-text">in three steps</span>
         </h2>
         <p class="text-lg text-[rgba(245,234,214,0.55)] max-w-xl mx-auto fade-up leading-[1.7]">
           No complex setup. No dedicated DevOps time. Just connect, write, and ship with confidence.
         </p>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6 relative">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 relative">
         <!-- Step 1 -->
         <div class="feature-card flex flex-col items-center text-center fade-up" style="border-color:rgba(198,165,89,0.18);">
           <div class="step-number mb-6 relative z-10">1</div>
@@ -1206,15 +1227,15 @@
   <!-- ════════════════════════════════
        AI PROMPT DEMO
   ════════════════════════════════ -->
-  <section id="ai-demo" class="py-28 px-6 glow-section">
+  <section id="ai-demo" class="py-16 md:py-28 px-5 sm:px-6 glow-section">
     <div class="max-w-3xl mx-auto">
       <div class="text-center mb-12">
         <div class="section-label fade-up">
           <svg class="w-3 h-3" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="6"/></svg>
           AI-Powered Testing
         </div>
-        <h2 class="text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
-          Describe it.<br/><span class="gold-text">We test it.</span>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
+          Describe it.<br class="hidden sm:inline"/> <span class="gold-text">We test it.</span>
         </h2>
         <p class="text-lg text-[rgba(245,234,214,0.55)] leading-[1.7] max-w-xl mx-auto fade-up">
           Tell our AI what you want to test in plain English — it writes, runs, and reports on every scenario automatically.
@@ -1361,11 +1382,11 @@
   <!-- ════════════════════════════════
        PRICING
   ════════════════════════════════ -->
-  <section id="pricing" class="py-28 px-6">
+  <section id="pricing" class="py-16 md:py-28 px-5 sm:px-6">
     <div class="max-w-6xl mx-auto">
       <div class="text-center mb-16">
         <div class="section-label fade-up">Pricing</div>
-        <h2 class="text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
           Simple, transparent pricing
         </h2>
         <p class="text-lg text-[rgba(245,234,214,0.55)] leading-[1.7] max-w-xl mx-auto fade-up">
@@ -1373,7 +1394,7 @@
         </p>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6">
+      <div class="grid md:grid-cols-3 gap-6 pt-4">
         <!-- Starter -->
         <div class="pricing-card fade-up">
           <div class="mb-6">
@@ -1411,7 +1432,7 @@
         </div>
 
         <!-- Pro (featured) -->
-        <div class="pricing-card featured fade-up" style="transform: scale(1.04); z-index:2;">
+        <div class="pricing-card featured fade-up" style="z-index:2;">
           <div class="absolute -top-4 left-1/2 -translate-x-1/2" style="z-index:3;">
             <span class="px-5 py-1.5 rounded-full text-xs font-700 text-[#0E0A03]"
                   style="background:linear-gradient(135deg,#C6A559,#E6B979); letter-spacing:0.08em; text-transform:uppercase; box-shadow:0 4px 16px rgba(198,165,89,0.4);">⚡ Most Popular</span>
@@ -1492,16 +1513,16 @@
   <!-- ════════════════════════════════
        TESTIMONIALS
   ════════════════════════════════ -->
-  <section id="testimonials" class="py-28 px-6 glow-section">
+  <section id="testimonials" class="py-16 md:py-28 px-5 sm:px-6 glow-section">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-16">
         <div class="section-label fade-up">Testimonials</div>
-        <h2 class="text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
-          Loved by engineers<br/><span class="gold-text">around the world</span>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
+          Loved by engineers<br class="hidden sm:inline"/> <span class="gold-text">around the world</span>
         </h2>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
         <div class="testimonial-card fade-up">
           <div class="stars text-sm mb-4">★★★★★</div>
           <p class="text-[rgba(245,234,214,0.75)] text-sm leading-[1.7] mb-6">
@@ -1551,9 +1572,9 @@
   <!-- ════════════════════════════════
        CTA BANNER
   ════════════════════════════════ -->
-  <section class="py-28 px-6">
+  <section class="py-16 md:py-28 px-5 sm:px-6">
     <div class="max-w-4xl mx-auto">
-      <div class="rounded-3xl p-16 text-center relative overflow-hidden"
+      <div class="rounded-2xl md:rounded-3xl p-8 sm:p-12 md:p-16 text-center relative overflow-hidden"
            style="background:linear-gradient(160deg,rgba(48,32,10,0.98),rgba(20,13,3,0.99)); border:1px solid rgba(198,165,89,0.3); box-shadow:0 0 0 1px rgba(198,165,89,0.08), 0 40px 120px rgba(198,165,89,0.12), 0 0 200px rgba(198,165,89,0.04);">
         <!-- Top accent line -->
         <div class="absolute top-0 left-0 right-0 h-px pointer-events-none"
@@ -1566,8 +1587,8 @@
              style="background:radial-gradient(ellipse 50% 40% at 50% 100%, rgba(180,40,0,0.08) 0%, transparent 70%);"></div>
         <div class="relative z-10">
           <div class="section-label fade-up">Start Today</div>
-          <h2 class="text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
-            Ready to ship<br/><span class="gold-text">without fear?</span>
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
+            Ready to ship<br class="hidden sm:inline"/> <span class="gold-text">without fear?</span>
           </h2>
           <p class="text-lg text-[rgba(245,234,214,0.55)] max-w-lg mx-auto mb-10 fade-up leading-[1.7]">
             Join 10,000+ teams who catch bugs before users do. Free forever for small projects. No credit card required.
@@ -1588,11 +1609,11 @@
   <!-- ════════════════════════════════
        FOOTER
   ════════════════════════════════ -->
-  <footer class="border-t border-[rgba(198,165,89,0.1)] px-6 pt-16 pb-8">
+  <footer class="border-t border-[rgba(198,165,89,0.1)] px-5 sm:px-6 pt-12 md:pt-16 pb-8">
     <div class="max-w-7xl mx-auto">
-      <div class="grid md:grid-cols-5 gap-12 mb-16">
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10 md:gap-8 lg:gap-12 mb-12 md:mb-16">
         <!-- Brand col -->
-        <div class="md:col-span-2">
+        <div class="col-span-2 md:col-span-4 lg:col-span-2">
           <a href="#" class="flex items-center gap-3 mb-4">
             <img src="tester-logo.png" alt="Tester.io" class="h-8 w-auto" />
             <span class="text-lg font-bold tracking-tight" style="color:#f5ead6;">
