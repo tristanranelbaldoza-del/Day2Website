@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Sagrada Família — Sights by Tester.io</title>
+  <meta name="description" content="A scroll-driven portrait of La Sagrada Família — from blueprint, through a glowing transformation, to the finished basilica." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:           #0E0A03;
+      --bg-1:         #140E05;
+      --gold:         #C6A559;
+      --gold-light:   #E6B979;
+      --gold-deep:    #8B6F2E;
+      --cream:        #f5ead6;
+      --cream-mute:   rgba(245,234,214,0.60);
+      --cream-fade:   rgba(245,234,214,0.38);
+      --rule:         rgba(198,165,89,0.14);
+      --ease:         cubic-bezier(.2,.8,.2,1);
+      --ease-spring:  cubic-bezier(.16,1,.3,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 72px;
+      background: var(--bg);
+    }
+    body {
+      font-family: 'Montserrat', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--cream);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    ::selection { background: rgba(198,165,89,0.35); color: var(--cream); }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 50% at 85% -10%, rgba(230,185,121,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 60% at 50% 120%, rgba(198,165,89,0.05) 0%, transparent 65%);
+    }
+    body::after {
+      content: "";
+      position: fixed; inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.14;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+    }
+
+    /* ════════════════════════════════════════════
+       NAV
+    ════════════════════════════════════════════ */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 60;
+      padding: 16px clamp(20px, 3.5vw, 72px);
+      border-bottom: 1px solid transparent;
+      transition: background 320ms var(--ease), backdrop-filter 320ms var(--ease), border-color 320ms var(--ease);
+    }
+    .nav.scrolled {
+      background: rgba(14,10,3,0.75);
+      backdrop-filter: blur(18px) saturate(1.2);
+      -webkit-backdrop-filter: blur(18px) saturate(1.2);
+      border-bottom-color: var(--rule);
+    }
+    .nav__inner {
+      max-width: 1600px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px;
+    }
+    .nav__left { display: flex; align-items: center; gap: clamp(12px, 2vw, 24px); }
+    .back-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
+      color: var(--cream-mute);
+      padding: 8px 14px 8px 12px;
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      background: rgba(198,165,89,0.03);
+      transition: color 220ms var(--ease), border-color 220ms var(--ease), transform 220ms var(--ease-spring);
+      white-space: nowrap;
+    }
+    .back-chip:hover { color: var(--cream); border-color: var(--gold); transform: translateX(-2px); }
+    .back-chip svg { width: 13px; height: 13px; }
+    .back-chip__label { display: none; }
+    @media (min-width: 560px) { .back-chip__label { display: inline; } }
+
+    .brand {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15px; color: var(--cream);
+      font-family: 'Bricolage Grotesque', sans-serif;
+      letter-spacing: -0.015em;
+    }
+    .brand img { height: 22px; }
+    .brand em {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--gold-light);
+    }
+
+    .nav__cue {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--cream-fade);
+      display: none;
+    }
+    @media (min-width: 780px) { .nav__cue { display: inline-flex; align-items: center; gap: 10px; } }
+    .nav__cue::before {
+      content: ""; width: 6px; height: 6px; border-radius: 999px;
+      background: var(--gold-light);
+      box-shadow: 0 0 10px rgba(230,185,121,0.6);
+    }
+
+    /* ════════════════════════════════════════════
+       TYPOGRAPHY
+    ════════════════════════════════════════════ */
+    .display {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      line-height: 1.02;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    /* ════════════════════════════════════════════
+       HERO
+    ════════════════════════════════════════════ */
+    .hero {
+      padding: clamp(140px, 18vh, 200px) clamp(20px, 3.5vw, 72px) clamp(40px, 6vh, 80px);
+      max-width: 1400px; margin: 0 auto;
+    }
+    .hero__plate {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase;
+      color: var(--cream-fade);
+      display: flex; flex-wrap: wrap; gap: 14px 28px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rule);
+      margin-bottom: clamp(40px, 6vh, 64px);
+    }
+    .hero__plate .accent { color: var(--gold-light); }
+    .hero__grid {
+      display: grid; gap: 40px;
+      grid-template-columns: 1fr;
+      align-items: end;
+    }
+    @media (min-width: 900px) {
+      .hero__grid { grid-template-columns: 1.35fr 1fr; gap: 80px; }
+    }
+    .hero__title {
+      font-size: clamp(2.5rem, 8vw, 7rem);
+      max-width: 14ch;
+    }
+    .hero__title em {
+      font-style: italic;
+      font-weight: 400;
+      color: var(--gold-light);
+    }
+    .hero__deck {
+      color: var(--cream-mute);
+      font-size: clamp(1rem, 1.25vw, 1.15rem);
+      line-height: 1.7;
+      max-width: 44ch;
+    }
+    .hero__deck::first-letter {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 2.8em;
+      float: left;
+      padding: 0.05em 0.12em 0 0;
+      line-height: 0.85;
+      color: var(--gold);
+    }
+
+    /* ════════════════════════════════════════════
+       SCROLL SEQUENCE — frame scrub
+    ════════════════════════════════════════════ */
+    .sequence { position: relative; }
+    .sequence__track {
+      position: relative;
+      height: 360vh;
+    }
+    .sequence__sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      height: 100svh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    .stage {
+      position: relative;
+      width: min(92vw, 88vh, 820px);
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      border-radius: 18px;
+      background: #000;
+      box-shadow:
+        0 0 0 1px rgba(198,165,89,0.10),
+        0 50px 100px rgba(0,0,0,0.6);
+    }
+    .stage__canvas {
+      position: absolute; inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+    }
+    .stage::after {
+      content: "";
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 12%, transparent 88%, rgba(0,0,0,0.25) 100%);
+    }
+
+    /* Corner marks */
+    .stage__corner {
+      position: absolute;
+      width: 16px; height: 16px;
+      border: 1px solid rgba(245,234,214,0.32);
+      pointer-events: none;
+      z-index: 8;
+    }
+    .stage__corner.tl { top: 12px; left: 12px; border-right: 0; border-bottom: 0; }
+    .stage__corner.tr { top: 12px; right: 12px; border-left: 0; border-bottom: 0; }
+    .stage__corner.bl { bottom: 12px; left: 12px; border-right: 0; border-top: 0; }
+    .stage__corner.br { bottom: 12px; right: 12px; border-left: 0; border-top: 0; }
+
+    /* Phase HUD */
+    .hud {
+      position: absolute;
+      top: 18px; left: 18px;
+      z-index: 10;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase;
+      padding: 8px 14px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(245,234,214,0.18);
+      border-radius: 999px;
+      color: var(--cream);
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .hud__idx { color: var(--gold-light); }
+    .hud__title { color: var(--cream); }
+
+    .hud-sub {
+      position: absolute;
+      bottom: 22px; right: 22px;
+      z-index: 10;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+      color: rgba(245,234,214,0.75);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border: 1px solid rgba(245,234,214,0.18);
+      border-radius: 999px;
+    }
+
+    /* Progress rail */
+    .rail {
+      position: absolute;
+      top: 60px; bottom: 60px;
+      right: 18px;
+      width: 2px;
+      background: rgba(245,234,214,0.12);
+      z-index: 9;
+    }
+    .rail__fill {
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%;
+      background: linear-gradient(180deg, var(--gold-light), var(--gold-deep));
+      transition: height 120ms linear;
+    }
+    .rail__tick { position: absolute; left: -4px; width: 10px; height: 1px; background: rgba(245,234,214,0.35); }
+    .rail__tick.t1 { top: 0%; }
+    .rail__tick.t2 { top: 50%; }
+    .rail__tick.t3 { top: 100%; }
+
+    /* Scroll cue */
+    .cue {
+      position: absolute;
+      left: 50%; bottom: 30px;
+      transform: translateX(-50%);
+      z-index: 11;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--cream-fade);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      pointer-events: none;
+      transition: opacity 380ms var(--ease);
+    }
+    .cue .dash {
+      width: 1px; height: 32px;
+      background: linear-gradient(180deg, transparent, var(--cream-mute));
+      animation: bob 2.4s ease-in-out infinite;
+    }
+    @keyframes bob { 0%, 100% { transform: scaleY(1); transform-origin: top; } 50% { transform: scaleY(0.4); } }
+
+    /* ════════════════════════════════════════════
+       FACTS
+    ════════════════════════════════════════════ */
+    .facts {
+      max-width: 1400px; margin: 0 auto;
+      padding: clamp(100px, 14vh, 160px) clamp(20px, 3.5vw, 72px);
+    }
+    .facts__head {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin-bottom: 56px;
+    }
+    @media (min-width: 820px) {
+      .facts__head { grid-template-columns: 1fr 1fr; gap: 64px; align-items: end; }
+    }
+    .facts__head h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.04; letter-spacing: -0.028em;
+    }
+    .facts__head p {
+      color: var(--cream-mute);
+      font-size: 15.5px; line-height: 1.65;
+      max-width: 52ch;
+    }
+    .fact-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 680px)  { .fact-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1040px) { .fact-grid { grid-template-columns: repeat(4, 1fr); } }
+    .fact {
+      padding: 32px 28px;
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      background: linear-gradient(160deg, var(--bg-1), var(--bg));
+      transition: transform 360ms var(--ease-spring), border-color 300ms var(--ease);
+    }
+    .fact:hover { transform: translateY(-4px); border-color: var(--gold); }
+    .fact__num {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 500;
+      font-size: clamp(2.5rem, 3.5vw, 3.4rem);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #F0C990, #C6A559 60%, #8B6F2E);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent;
+      display: inline-block;
+    }
+    .fact__num .sfx {
+      font-size: 0.45em;
+      margin-left: 2px;
+      color: var(--cream);
+      -webkit-text-fill-color: var(--cream);
+      letter-spacing: -0.02em;
+    }
+    .fact__label {
+      margin-top: 18px;
+      font-size: 14px; line-height: 1.55;
+      color: var(--cream-mute);
+      max-width: 28ch;
+    }
+    .fact__tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase;
+      color: var(--gold);
+      display: block; margin-bottom: 16px;
+    }
+
+    /* ════════════════════════════════════════════
+       REVEAL
+    ════════════════════════════════════════════ */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 820ms var(--ease-spring), transform 820ms var(--ease-spring); }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal[data-d="1"] { transition-delay: 100ms; }
+    .reveal[data-d="2"] { transition-delay: 200ms; }
+    .reveal[data-d="3"] { transition-delay: 300ms; }
+    .reveal[data-d="4"] { transition-delay: 400ms; }
+
+    /* ════════════════════════════════════════════
+       CTA
+    ════════════════════════════════════════════ */
+    .cta {
+      padding: clamp(80px, 12vh, 140px) clamp(20px, 3.5vw, 72px) clamp(120px, 16vh, 180px);
+      text-align: center;
+      max-width: 900px; margin: 0 auto;
+    }
+    .cta h2 {
+      font-size: clamp(2rem, 4.5vw, 3.5rem);
+      line-height: 1.04; letter-spacing: -0.028em;
+      max-width: 16ch; margin: 0 auto 20px;
+    }
+    .cta h2 em { font-style: italic; color: var(--gold-light); font-weight: 400; }
+    .cta p { color: var(--cream-mute); font-size: 16px; max-width: 44ch; margin: 0 auto 36px; line-height: 1.7; }
+    .cta__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 700;
+      padding: 15px 26px;
+      border-radius: 999px;
+      color: #0a0a0a;
+      background: linear-gradient(135deg, #F0C990 0%, #C6A559 55%, #8B6F2E 100%);
+      box-shadow: 0 0 0 1px rgba(198,165,89,0.35), 0 14px 34px rgba(198,165,89,0.22);
+      transition: transform 260ms var(--ease-spring), box-shadow 260ms var(--ease);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(230,185,121,0.55), 0 22px 50px rgba(198,165,89,0.3); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 500;
+      padding: 14px 22px;
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      background: rgba(198,165,89,0.03);
+      color: var(--cream);
+      transition: border-color 220ms var(--ease), background 220ms var(--ease), transform 220ms var(--ease-spring);
+    }
+    .btn-ghost:hover { border-color: var(--gold); background: rgba(198,165,89,0.08); transform: translateY(-2px); }
+
+    /* ════════════════════════════════════════════
+       FOOTER
+    ════════════════════════════════════════════ */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 40px clamp(20px, 3.5vw, 72px);
+    }
+    .foot {
+      max-width: 1400px; margin: 0 auto;
+      display: flex; flex-wrap: wrap; gap: 18px;
+      align-items: center; justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--cream-fade);
+    }
+    .foot a { color: var(--cream-mute); transition: color 200ms var(--ease); }
+    .foot a:hover { color: var(--cream); }
+
+    /* ════════════════════════════════════════════
+       MOTION PREFERENCES
+    ════════════════════════════════════════════ */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+      .sequence__track { height: auto; }
+      .sequence__sticky { position: static; height: auto; padding: 40px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════
+       NAV
+  ════════════════════════════════ -->
+  <nav class="nav" id="nav" aria-label="Primary">
+    <div class="nav__inner">
+      <div class="nav__left">
+        <a href="index.html" class="back-chip" aria-label="Back to Tester.io main site">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+          <span class="back-chip__label">Tester.io</span>
+        </a>
+        <a href="#top" class="brand">
+          <img src="tester-logo.png" alt="" />
+          <span>Sights <em>/</em> La Sagrada Família</span>
+        </a>
+      </div>
+      <span class="nav__cue">Scroll to build</span>
+    </div>
+  </nav>
+
+  <!-- ════════════════════════════════
+       HERO
+  ════════════════════════════════ -->
+  <section class="hero" id="top">
+    <div class="hero__plate">
+      <span>Barcelona · 41°24′13″N 2°10′28″E</span>
+      <span class="accent">● Construction since 1882</span>
+      <span>Gaudí, unfinished</span>
+    </div>
+    <div class="hero__grid">
+      <h1 class="display hero__title">
+        From a drawing <em>to a finished basilica</em>.
+      </h1>
+      <p class="hero__deck">
+        One hundred and forty-three years on, La Sagrada Família is still
+        going up. Scroll slowly — the same elevation resolves from a
+        blueprint, through a burst of light, into the finished cathedral.
+      </p>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SCROLL SEQUENCE — frame scrub
+  ════════════════════════════════ -->
+  <section class="sequence" id="sequence" aria-label="La Sagrada Familia scroll sequence">
+    <div class="sequence__track" id="seqTrack">
+      <div class="sequence__sticky">
+        <div class="stage">
+          <span class="stage__corner tl" aria-hidden="true"></span>
+          <span class="stage__corner tr" aria-hidden="true"></span>
+          <span class="stage__corner bl" aria-hidden="true"></span>
+          <span class="stage__corner br" aria-hidden="true"></span>
+
+          <!-- HUD -->
+          <div class="hud">
+            <span class="hud__idx" id="hudIdx">01 / 03</span>
+            <span class="hud__title" id="hudTitle">Blueprint</span>
+          </div>
+          <div class="hud-sub" id="hudSub">Pen &amp; paper</div>
+
+          <!-- Progress rail -->
+          <div class="rail" aria-hidden="true">
+            <div class="rail__tick t1"></div>
+            <div class="rail__tick t2"></div>
+            <div class="rail__tick t3"></div>
+            <div class="rail__fill" id="railFill"></div>
+          </div>
+
+          <!-- Scrubbed frame — drawn to canvas for flicker-free swapping -->
+          <canvas
+            id="sagradaCanvas"
+            class="stage__canvas"
+            width="960"
+            height="960"
+            aria-label="La Sagrada Família elevation drawing transforming from blueprint to completed basilica"
+            role="img"
+          ></canvas>
+
+          <!-- Scroll cue -->
+          <div class="cue" id="cue">
+            <span>Scroll</span>
+            <span class="dash"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       FACTS
+  ════════════════════════════════ -->
+  <section class="facts" id="facts">
+    <div class="facts__head">
+      <h2 class="display reveal">
+        One drawing,<br/>
+        <em style="color: var(--gold-light); font-style: italic; font-weight: 400;">one-and-a-half centuries.</em>
+      </h2>
+      <p class="reveal" data-d="1">
+        Antoni Gaudí took over the project in 1883 and worked on it for
+        forty-three years — the last fifteen of them exclusively — until his
+        death in 1926. We're still finishing what he left behind.
+      </p>
+    </div>
+
+    <div class="fact-grid">
+      <div class="fact reveal">
+        <span class="fact__tag">01 · Started</span>
+        <span class="fact__num">1882</span>
+        <p class="fact__label">First stone laid on the 19th of March, under architect Francisco de Paula del Villar.</p>
+      </div>
+      <div class="fact reveal" data-d="1">
+        <span class="fact__tag">02 · Height</span>
+        <span class="fact__num">172.5<span class="sfx">m</span></span>
+        <p class="fact__label">Planned height of the central Jesus tower — one metre shy of Montjuïc, so no human work exceeds God's.</p>
+      </div>
+      <div class="fact reveal" data-d="2">
+        <span class="fact__tag">03 · Spires</span>
+        <span class="fact__num">18</span>
+        <p class="fact__label">Total planned spires. Twelve apostles, four evangelists, one Mary, one Christ — eight built as of 2026.</p>
+      </div>
+      <div class="fact reveal" data-d="3">
+        <span class="fact__tag">04 · Finish</span>
+        <span class="fact__num">2026</span>
+        <p class="fact__label">Target consecration year — a century after Gaudí was struck by a tram and laid to rest inside the crypt.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       CTA
+  ════════════════════════════════ -->
+  <section class="cta" id="home">
+    <h2 class="display reveal">
+      More sights,<br/>
+      <em>more scrolling.</em>
+    </h2>
+    <p class="reveal" data-d="1">
+      This is the first in a series. If you've got a landmark you'd like us
+      to draw three ways, tell us — we're taking nominations.
+    </p>
+    <div class="cta__actions reveal" data-d="2">
+      <a href="Taj.html" class="btn-primary">
+        See the Taj Mahal
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a href="index.html" class="btn-ghost">Back to Tester.io</a>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       FOOTER
+  ════════════════════════════════ -->
+  <footer>
+    <div class="foot">
+      <span>© 2026 Tester.io · Sights Vol. 01</span>
+      <span><a href="index.html">Home</a> · <a href="product.html">Smart Watch Pro</a> · <a href="TesterTech.html">Tester Tech</a> · <a href="anything.html">Lantern Fund</a></span>
+    </div>
+  </footer>
+
+  <script>
+    // 1. Nav backdrop on scroll
+    (function () {
+      var nav = document.getElementById('nav');
+      var on = function () { nav.classList.toggle('scrolled', window.scrollY > 10); };
+      on();
+      window.addEventListener('scroll', on, { passive: true });
+    })();
+
+    // 2. Reveal on scroll
+    (function () {
+      var items = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        items.forEach(function (el) { el.classList.add('in'); }); return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { rootMargin: '0px 0px -80px 0px', threshold: 0.12 });
+      items.forEach(function (el) { io.observe(el); });
+    })();
+
+    // 3. Scroll scrub via <canvas>. Preloads every frame, calls decode() so
+    //    each bitmap is GPU-ready before first use, then paints with drawImage
+    //    on scroll. drawImage is a synchronous blit so there's no flash
+    //    between frames — what you saw before was <img>.src swap briefly
+    //    clearing the element while the new bitmap decoded.
+    (function () {
+      var track  = document.getElementById('seqTrack');
+      var canvas = document.getElementById('sagradaCanvas');
+      var rail   = document.getElementById('railFill');
+      var hudIdx   = document.getElementById('hudIdx');
+      var hudTitle = document.getElementById('hudTitle');
+      var hudSub   = document.getElementById('hudSub');
+      var cue      = document.getElementById('cue');
+      if (!track || !canvas || !canvas.getContext) return;
+
+      var TOTAL = 61;
+      var pad = function (n) { return ('000' + n).slice(-4); };
+      var src = function (n) { return 'Videos/sagrada-frames/frame_' + pad(n) + '.jpg'; };
+
+      var ctx = canvas.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+
+      // Load + decode every frame. decode() resolves once the bitmap is fully
+      // decoded and ready for synchronous drawImage — no first-draw latency.
+      var frames = new Array(TOTAL + 1);
+      var ready  = new Array(TOTAL + 1).fill(false);
+
+      for (var i = 1; i <= TOTAL; i++) {
+        (function (n) {
+          var img = new Image();
+          img.decoding = 'async';
+          img.src = src(n);
+          frames[n] = img;
+          var markReady = function () {
+            ready[n] = true;
+            // If the current displayed frame is this one, redraw now that it's ready.
+            if (n === lastIdx) draw(n);
+          };
+          if (img.decode) {
+            img.decode().then(markReady).catch(function () {
+              // Fallback: if decode rejects, fall back to load event.
+              if (img.complete) markReady();
+              else img.addEventListener('load', markReady, { once: true });
+            });
+          } else {
+            if (img.complete) markReady();
+            else img.addEventListener('load', markReady, { once: true });
+          }
+        })(i);
+      }
+
+      var lastIdx = 0;
+
+      function draw(idx) {
+        var img = frames[idx];
+        if (!img || !ready[idx]) return;
+        // Fit the 960×960 source into whatever canvas bitmap size we're using
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        lastIdx = idx;
+      }
+
+      function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+      // Keep the canvas internal bitmap at a sensible resolution. 960 matches
+      // the source video natively — any larger would upscale, smaller would
+      // soften detail. (CSS scales the display size independently.)
+      function sizeCanvas() {
+        var dpr = Math.min(2, window.devicePixelRatio || 1);
+        // Keep the backing bitmap at source resolution; no need to grow with DPR.
+        canvas.width  = 960;
+        canvas.height = 960;
+        // Redraw current frame after a resize
+        if (lastIdx) draw(lastIdx);
+      }
+      sizeCanvas();
+
+      function tick() {
+        ticking = false;
+        var rect = track.getBoundingClientRect();
+        var scrollable = track.offsetHeight - window.innerHeight;
+        if (scrollable <= 0) return;
+        var p = clamp(-rect.top / scrollable, 0, 1);
+
+        var idx = Math.min(TOTAL, Math.max(1, Math.round(p * (TOTAL - 1)) + 1));
+        if (idx !== lastIdx) draw(idx);
+
+        if (rail) rail.style.height = (p * 100).toFixed(2) + '%';
+
+        var idxLabel, titleLabel, subLabel;
+        if (p < 0.30)       { idxLabel = '01 / 03'; titleLabel = 'Blueprint';  subLabel = 'Pen & paper'; }
+        else if (p < 0.70)  { idxLabel = '02 / 03'; titleLabel = 'Transition'; subLabel = 'Light phase'; }
+        else                { idxLabel = '03 / 03'; titleLabel = 'Finished';   subLabel = 'Rendered';    }
+        if (hudIdx   && hudIdx.textContent   !== idxLabel)   hudIdx.textContent   = idxLabel;
+        if (hudTitle && hudTitle.textContent !== titleLabel) hudTitle.textContent = titleLabel;
+        if (hudSub   && hudSub.textContent   !== subLabel)   hudSub.textContent   = subLabel;
+
+        if (cue) cue.style.opacity = p > 0.04 ? '0' : '1';
+      }
+
+      var ticking = false;
+      function onScroll() {
+        if (!ticking) { ticking = true; requestAnimationFrame(tick); }
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', function () { sizeCanvas(); onScroll(); }, { passive: true });
+
+      // Draw the first frame as soon as it's ready
+      if (ready[1]) draw(1);
+      tick();
+    })();
+  </script>
+</body>
+</html>

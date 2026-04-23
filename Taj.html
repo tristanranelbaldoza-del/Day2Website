@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taj Mahal — Sights by Tester.io</title>
+  <meta name="description" content="A scroll-driven portrait of the Taj Mahal — from architectural blueprint to the finished mausoleum on the Yamuna." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Three.js for the interactive 3D model section -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three":          "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/":  "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg:           #0E0A03;
+      --bg-1:         #140E05;
+      --gold:         #C6A559;
+      --gold-light:   #E6B979;
+      --gold-deep:    #8B6F2E;
+      --cream:        #f5ead6;
+      --cream-mute:   rgba(245,234,214,0.60);
+      --cream-fade:   rgba(245,234,214,0.38);
+      --rule:         rgba(198,165,89,0.14);
+      --ease:         cubic-bezier(.2,.8,.2,1);
+      --ease-spring:  cubic-bezier(.16,1,.3,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 72px;
+      background: var(--bg);
+    }
+    body {
+      font-family: 'Montserrat', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--cream);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    ::selection { background: rgba(198,165,89,0.35); color: var(--cream); }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      z-index: -2; pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 50% at 85% -10%, rgba(230,185,121,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 60% at 50% 120%, rgba(198,165,89,0.05) 0%, transparent 65%);
+    }
+    body::after {
+      content: "";
+      position: fixed; inset: 0;
+      z-index: -1; pointer-events: none;
+      opacity: 0.14; mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 60;
+      padding: 16px clamp(20px, 3.5vw, 72px);
+      border-bottom: 1px solid transparent;
+      transition: background 320ms var(--ease), backdrop-filter 320ms var(--ease), border-color 320ms var(--ease);
+    }
+    .nav.scrolled {
+      background: rgba(14,10,3,0.75);
+      backdrop-filter: blur(18px) saturate(1.2);
+      -webkit-backdrop-filter: blur(18px) saturate(1.2);
+      border-bottom-color: var(--rule);
+    }
+    .nav__inner {
+      max-width: 1600px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .nav__left { display: flex; align-items: center; gap: clamp(12px, 2vw, 24px); }
+    .back-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
+      color: var(--cream-mute);
+      padding: 8px 14px 8px 12px;
+      border: 1px solid var(--rule); border-radius: 999px;
+      background: rgba(198,165,89,0.03);
+      transition: color 220ms var(--ease), border-color 220ms var(--ease), transform 220ms var(--ease-spring);
+      white-space: nowrap;
+    }
+    .back-chip:hover { color: var(--cream); border-color: var(--gold); transform: translateX(-2px); }
+    .back-chip svg { width: 13px; height: 13px; }
+    .back-chip__label { display: none; }
+    @media (min-width: 560px) { .back-chip__label { display: inline; } }
+
+    .brand {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15px; color: var(--cream);
+      font-family: 'Bricolage Grotesque', sans-serif;
+      letter-spacing: -0.015em;
+    }
+    .brand img { height: 22px; }
+    .brand em {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-style: italic; font-weight: 400; color: var(--gold-light);
+    }
+    .nav__cue {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--cream-fade); display: none;
+    }
+    @media (min-width: 780px) { .nav__cue { display: inline-flex; align-items: center; gap: 10px; } }
+    .nav__cue::before {
+      content: ""; width: 6px; height: 6px; border-radius: 999px;
+      background: var(--gold-light);
+      box-shadow: 0 0 10px rgba(230,185,121,0.6);
+    }
+
+    /* ── TYPE ── */
+    .display {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 500; letter-spacing: -0.035em; line-height: 1.02;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: clamp(140px, 18vh, 200px) clamp(20px, 3.5vw, 72px) clamp(40px, 6vh, 80px);
+      max-width: 1400px; margin: 0 auto;
+    }
+    .hero__plate {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase;
+      color: var(--cream-fade);
+      display: flex; flex-wrap: wrap; gap: 14px 28px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rule);
+      margin-bottom: clamp(40px, 6vh, 64px);
+    }
+    .hero__plate .accent { color: var(--gold-light); }
+    .hero__grid {
+      display: grid; gap: 40px;
+      grid-template-columns: 1fr;
+      align-items: end;
+    }
+    @media (min-width: 900px) {
+      .hero__grid { grid-template-columns: 1.35fr 1fr; gap: 80px; }
+    }
+    .hero__title {
+      font-size: clamp(2.5rem, 8vw, 7rem);
+      max-width: 14ch;
+    }
+    .hero__title em {
+      font-style: italic; font-weight: 400; color: var(--gold-light);
+    }
+    .hero__deck {
+      color: var(--cream-mute);
+      font-size: clamp(1rem, 1.25vw, 1.15rem);
+      line-height: 1.7; max-width: 44ch;
+    }
+    .hero__deck::first-letter {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600; font-size: 2.8em; float: left;
+      padding: 0.05em 0.12em 0 0;
+      line-height: 0.85; color: var(--gold);
+    }
+
+    /* ── SEQUENCE ── */
+    .sequence { position: relative; }
+    .sequence__track {
+      position: relative;
+      height: 320vh;
+    }
+    .sequence__sticky {
+      position: sticky; top: 0;
+      height: 100vh; height: 100svh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .stage {
+      position: relative;
+      width: min(92vw, 88vh, 820px);
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      border-radius: 18px;
+      background: #000;
+      box-shadow:
+        0 0 0 1px rgba(198,165,89,0.10),
+        0 50px 100px rgba(0,0,0,0.6);
+    }
+    /* Two overlapping layers on the same stage: the blueprint image (top)
+       fades out as the 3D canvas (bottom) fades in — scroll drives both. */
+    .stage__canvas3d {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      display: block; background: #000;
+      z-index: 1;
+      cursor: grab;
+    }
+    .stage__canvas3d:active { cursor: grabbing; }
+    .stage__blueprint-layer {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      background: #000;
+      display: block;
+      z-index: 2;
+      pointer-events: none;
+      will-change: opacity;
+    }
+    .stage::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 12%, transparent 88%, rgba(0,0,0,0.25) 100%);
+    }
+
+    .stage__corner {
+      position: absolute; width: 16px; height: 16px;
+      border: 1px solid rgba(245,234,214,0.32);
+      pointer-events: none; z-index: 8;
+    }
+    .stage__corner.tl { top: 12px; left: 12px; border-right: 0; border-bottom: 0; }
+    .stage__corner.tr { top: 12px; right: 12px; border-left: 0; border-bottom: 0; }
+    .stage__corner.bl { bottom: 12px; left: 12px; border-right: 0; border-top: 0; }
+    .stage__corner.br { bottom: 12px; right: 12px; border-left: 0; border-top: 0; }
+
+    .hud {
+      position: absolute; top: 18px; left: 18px; z-index: 10;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase;
+      padding: 8px 14px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(245,234,214,0.18);
+      border-radius: 999px; color: var(--cream);
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .hud__idx { color: var(--gold-light); }
+    .hud__title { color: var(--cream); }
+    .hud-sub {
+      position: absolute; bottom: 22px; right: 22px; z-index: 10;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+      color: rgba(245,234,214,0.75);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border: 1px solid rgba(245,234,214,0.18);
+      border-radius: 999px;
+    }
+
+    .rail {
+      position: absolute; top: 60px; bottom: 60px; right: 18px;
+      width: 2px;
+      background: rgba(245,234,214,0.12); z-index: 9;
+    }
+    .rail__fill {
+      position: absolute; left: 0; top: 0; width: 100%;
+      background: linear-gradient(180deg, var(--gold-light), var(--gold-deep));
+      transition: height 120ms linear;
+    }
+    .rail__tick { position: absolute; left: -4px; width: 10px; height: 1px; background: rgba(245,234,214,0.35); }
+    .rail__tick.t1 { top: 0%; }
+    .rail__tick.t2 { top: 50%; }
+    .rail__tick.t3 { top: 100%; }
+
+    .cue {
+      position: absolute; left: 50%; bottom: 30px;
+      transform: translateX(-50%); z-index: 11;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--cream-fade);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      pointer-events: none;
+      transition: opacity 380ms var(--ease);
+    }
+    .cue .dash {
+      width: 1px; height: 32px;
+      background: linear-gradient(180deg, transparent, var(--cream-mute));
+      animation: bob 2.4s ease-in-out infinite;
+    }
+    @keyframes bob { 0%, 100% { transform: scaleY(1); transform-origin: top; } 50% { transform: scaleY(0.4); } }
+
+    /* ── FACTS ── */
+    .facts {
+      max-width: 1400px; margin: 0 auto;
+      padding: clamp(100px, 14vh, 160px) clamp(20px, 3.5vw, 72px);
+    }
+    .facts__head {
+      display: grid; grid-template-columns: 1fr;
+      gap: 24px; margin-bottom: 56px;
+    }
+    @media (min-width: 820px) {
+      .facts__head { grid-template-columns: 1fr 1fr; gap: 64px; align-items: end; }
+    }
+    .facts__head h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.04; letter-spacing: -0.028em;
+    }
+    .facts__head p {
+      color: var(--cream-mute);
+      font-size: 15.5px; line-height: 1.65; max-width: 52ch;
+    }
+    .fact-grid {
+      display: grid; gap: 20px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 680px)  { .fact-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1040px) { .fact-grid { grid-template-columns: repeat(4, 1fr); } }
+    .fact {
+      padding: 32px 28px;
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      background: linear-gradient(160deg, var(--bg-1), var(--bg));
+      transition: transform 360ms var(--ease-spring), border-color 300ms var(--ease);
+    }
+    .fact:hover { transform: translateY(-4px); border-color: var(--gold); }
+    .fact__num {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 500;
+      font-size: clamp(2.5rem, 3.5vw, 3.4rem);
+      line-height: 1; letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #F0C990, #C6A559 60%, #8B6F2E);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent; display: inline-block;
+    }
+    .fact__num .sfx {
+      font-size: 0.45em; margin-left: 2px;
+      color: var(--cream);
+      -webkit-text-fill-color: var(--cream);
+      letter-spacing: -0.02em;
+    }
+    .fact__label {
+      margin-top: 18px; font-size: 14px;
+      line-height: 1.55; color: var(--cream-mute); max-width: 28ch;
+    }
+    .fact__tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase;
+      color: var(--gold);
+      display: block; margin-bottom: 16px;
+    }
+
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 820ms var(--ease-spring), transform 820ms var(--ease-spring); }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal[data-d="1"] { transition-delay: 100ms; }
+    .reveal[data-d="2"] { transition-delay: 200ms; }
+    .reveal[data-d="3"] { transition-delay: 300ms; }
+    .reveal[data-d="4"] { transition-delay: 400ms; }
+
+    /* ── CTA ── */
+    .cta {
+      padding: clamp(80px, 12vh, 140px) clamp(20px, 3.5vw, 72px) clamp(120px, 16vh, 180px);
+      text-align: center; max-width: 900px; margin: 0 auto;
+    }
+    .cta h2 {
+      font-size: clamp(2rem, 4.5vw, 3.5rem);
+      line-height: 1.04; letter-spacing: -0.028em;
+      max-width: 16ch; margin: 0 auto 20px;
+    }
+    .cta h2 em { font-style: italic; color: var(--gold-light); font-weight: 400; }
+    .cta p { color: var(--cream-mute); font-size: 16px; max-width: 44ch; margin: 0 auto 36px; line-height: 1.7; }
+    .cta__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 700;
+      padding: 15px 26px;
+      border-radius: 999px; color: #0a0a0a;
+      background: linear-gradient(135deg, #F0C990 0%, #C6A559 55%, #8B6F2E 100%);
+      box-shadow: 0 0 0 1px rgba(198,165,89,0.35), 0 14px 34px rgba(198,165,89,0.22);
+      transition: transform 260ms var(--ease-spring), box-shadow 260ms var(--ease);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(230,185,121,0.55), 0 22px 50px rgba(198,165,89,0.3); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 500;
+      padding: 14px 22px;
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      background: rgba(198,165,89,0.03);
+      color: var(--cream);
+      transition: border-color 220ms var(--ease), background 220ms var(--ease), transform 220ms var(--ease-spring);
+    }
+    .btn-ghost:hover { border-color: var(--gold); background: rgba(198,165,89,0.08); transform: translateY(-2px); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 40px clamp(20px, 3.5vw, 72px);
+    }
+    .foot {
+      max-width: 1400px; margin: 0 auto;
+      display: flex; flex-wrap: wrap; gap: 18px;
+      align-items: center; justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--cream-fade);
+    }
+    .foot a { color: var(--cream-mute); transition: color 200ms var(--ease); }
+    .foot a:hover { color: var(--cream); }
+
+    /* Interaction affordances shown once the 3D model is fully revealed */
+    .stage__hint {
+      position: absolute;
+      bottom: 22px; left: 22px;
+      z-index: 10;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+      padding: 6px 12px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(245,234,214,0.14);
+      border-radius: 999px;
+      color: rgba(245,234,214,0.75);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 360ms var(--ease);
+    }
+    .stage__reset {
+      position: absolute;
+      top: 22px; right: 22px;
+      z-index: 10;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+      padding: 7px 12px;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(245,234,214,0.22);
+      border-radius: 999px;
+      color: var(--cream);
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 360ms var(--ease), border-color 200ms var(--ease), background 200ms var(--ease), color 200ms var(--ease);
+    }
+    .stage__reset.is-on, .stage__hint.is-on { opacity: 1; }
+    .stage__reset.is-on { pointer-events: auto; }
+    .stage__reset:hover { border-color: var(--gold); background: rgba(198,165,89,0.12); color: var(--gold-light); }
+    .stage__reset:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 3px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+      .sequence__track { height: auto; }
+      .sequence__sticky { position: static; height: auto; padding: 40px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav" aria-label="Primary">
+    <div class="nav__inner">
+      <div class="nav__left">
+        <a href="index.html" class="back-chip" aria-label="Back to Tester.io main site">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+          <span class="back-chip__label">Tester.io</span>
+        </a>
+        <a href="#top" class="brand">
+          <img src="tester-logo.png" alt="" />
+          <span>Sights <em>/</em> Taj Mahal</span>
+        </a>
+      </div>
+      <span class="nav__cue">Scroll to build</span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="hero__plate">
+      <span>Agra, India · 27°10′30″N 78°02′31″E</span>
+      <span class="accent">● Built 1632 – 1653</span>
+      <span>A tomb for Mumtaz</span>
+    </div>
+    <div class="hero__grid">
+      <h1 class="display hero__title">
+        A drawing <em>becomes a tomb</em> on the Yamuna.
+      </h1>
+      <p class="hero__deck">
+        Shah Jahan commissioned the Taj Mahal as a mausoleum for his wife
+        Mumtaz Mahal in 1632. It took twenty thousand artisans, one thousand
+        elephants, and twenty-one years to complete. Scroll — the elevation
+        drawing resolves into the finished marble on the river.
+      </p>
+    </div>
+  </section>
+
+  <!-- SCROLL SEQUENCE -->
+  <section class="sequence" id="sequence" aria-label="Taj Mahal scroll sequence">
+    <div class="sequence__track" id="seqTrack">
+      <div class="sequence__sticky">
+        <div class="stage">
+          <span class="stage__corner tl" aria-hidden="true"></span>
+          <span class="stage__corner tr" aria-hidden="true"></span>
+          <span class="stage__corner bl" aria-hidden="true"></span>
+          <span class="stage__corner br" aria-hidden="true"></span>
+
+          <div class="hud">
+            <span class="hud__idx" id="hudIdx">01 / 02</span>
+            <span class="hud__title" id="hudTitle">Blueprint</span>
+          </div>
+          <div class="hud-sub" id="hudSub">Pen &amp; paper</div>
+
+          <div class="rail" aria-hidden="true">
+            <div class="rail__tick t1"></div>
+            <div class="rail__tick t2"></div>
+            <div class="rail__tick t3"></div>
+            <div class="rail__fill" id="railFill"></div>
+          </div>
+
+          <!-- Layer 1 (bottom) · 3D WebGL model. Camera framed to match the
+               blueprint's front elevation so the transition is seamless. -->
+          <canvas
+            id="tajCanvas3D"
+            class="stage__canvas3d"
+            width="720"
+            height="720"
+            aria-label="Interactive 3D model of the Taj Mahal"
+          ></canvas>
+
+          <!-- Layer 2 (top) · Blueprint image. Fades out as the user scrolls,
+               revealing the 3D model underneath. -->
+          <img
+            id="tajBlueprint"
+            class="stage__blueprint-layer"
+            src="Blueprint Taj.png"
+            alt="Taj Mahal blueprint elevation drawing"
+          />
+
+          <!-- Affordances shown once the transition completes -->
+          <span class="stage__hint" id="stageHint" aria-hidden="true">Drag · Scroll to zoom</span>
+          <button class="stage__reset" id="stageReset" type="button" aria-label="Reset camera to the blueprint view">Reset view</button>
+
+          <div class="cue" id="cue">
+            <span>Scroll</span>
+            <span class="dash"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- FACTS -->
+  <section class="facts" id="facts">
+    <div class="facts__head">
+      <h2 class="display reveal">
+        A mausoleum for a wife,<br/>
+        <em style="color: var(--gold-light); font-style: italic; font-weight: 400;">and a grief.</em>
+      </h2>
+      <p class="reveal" data-d="1">
+        Built in white Makrana marble, inlaid with twenty-eight kinds of
+        precious and semi-precious stones, the Taj Mahal is widely
+        considered the jewel of Mughal architecture and the finest
+        expression of love built in stone.
+      </p>
+    </div>
+
+    <div class="fact-grid">
+      <div class="fact reveal">
+        <span class="fact__tag">01 · Began</span>
+        <span class="fact__num">1632</span>
+        <p class="fact__label">Construction began under Shah Jahan as a tomb for his wife Mumtaz Mahal.</p>
+      </div>
+      <div class="fact reveal" data-d="1">
+        <span class="fact__tag">02 · Main dome</span>
+        <span class="fact__num">73<span class="sfx">m</span></span>
+        <p class="fact__label">Height of the central onion dome, flanked by four slender minarets.</p>
+      </div>
+      <div class="fact reveal" data-d="2">
+        <span class="fact__tag">03 · Workers</span>
+        <span class="fact__num">20k</span>
+        <p class="fact__label">Artisans, masons, and craftsmen. Plus a thousand elephants hauling stone.</p>
+      </div>
+      <div class="fact reveal" data-d="3">
+        <span class="fact__tag">04 · Finished</span>
+        <span class="fact__num">1653</span>
+        <p class="fact__label">Twenty-one years after it was begun. A UNESCO World Heritage Site since 1983.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta" id="home">
+    <h2 class="display reveal">
+      Another sight,<br/>
+      <em>another scroll.</em>
+    </h2>
+    <p class="reveal" data-d="1">
+      The Sights series continues. Next door: La Sagrada Família, from
+      blueprint through a golden burst to the finished basilica.
+    </p>
+    <div class="cta__actions reveal" data-d="2">
+      <a href="Sights.html" class="btn-primary">
+        See La Sagrada Família
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a href="index.html" class="btn-ghost">Back to Tester.io</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="foot">
+      <span>© 2026 Tester.io · Sights Vol. 02</span>
+      <span><a href="index.html">Home</a> · <a href="Sights.html">La Sagrada Família</a> · <a href="product.html">Smart Watch Pro</a> · <a href="anything.html">Lantern Fund</a></span>
+    </div>
+  </footer>
+
+  <script>
+    // Nav backdrop
+    (function () {
+      var nav = document.getElementById('nav');
+      var on = function () { nav.classList.toggle('scrolled', window.scrollY > 10); };
+      on();
+      window.addEventListener('scroll', on, { passive: true });
+    })();
+
+    // Reveals
+    (function () {
+      var items = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        items.forEach(function (el) { el.classList.add('in'); }); return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { rootMargin: '0px 0px -80px 0px', threshold: 0.12 });
+      items.forEach(function (el) { io.observe(el); });
+    })();
+
+  </script>
+
+  <!-- ════════════════════════════════
+       TAJ MAHAL · Scroll-driven blueprint → 3D model transition
+       The 3D canvas sits below the blueprint image in the same stage.
+       As the user scrolls the track, the blueprint opacity eases from
+       1 → 0 while the 3D model's camera pulls back and the whole thing
+       gently rotates. Past the end, OrbitControls takes over and the user
+       can orbit/zoom the live model.
+  ════════════════════════════════ -->
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+  (function () {
+    const canvas    = document.getElementById('tajCanvas3D');
+    const blueprint = document.getElementById('tajBlueprint');
+    const track     = document.getElementById('seqTrack');
+    const rail      = document.getElementById('railFill');
+    const hudIdx    = document.getElementById('hudIdx');
+    const hudTitle  = document.getElementById('hudTitle');
+    const hudSub    = document.getElementById('hudSub');
+    const cue       = document.getElementById('cue');
+    const hint      = document.getElementById('stageHint');
+    const reset     = document.getElementById('stageReset');
+    if (!canvas || !blueprint || !track) return;
+
+    // ── Renderer, scene, camera ──────────────────────────
+    const renderer = new THREE.WebGLRenderer({
+      canvas, antialias: true, alpha: false, powerPreference: 'high-performance',
+    });
+    renderer.setClearColor(0x000000, 1);
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    // Filmic tone mapping with slight under-exposure gives the sepia,
+    // high-contrast "illustration" quality of the End Frame reference.
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
+
+    const scene = new THREE.Scene();
+    // Near-pure-black backdrop with a barely-there warm glow just behind
+    // the building, matching the End Frame's void-and-lit-building vibe.
+    const bg = new THREE.Mesh(
+      new THREE.CircleGeometry(80, 64),
+      new THREE.ShaderMaterial({
+        uniforms: {
+          c1: { value: new THREE.Color(0x120802) },
+          c2: { value: new THREE.Color(0x000000) },
+        },
+        vertexShader:   'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+        fragmentShader: 'varying vec2 vUv; uniform vec3 c1; uniform vec3 c2; void main(){ float d=distance(vUv,vec2(0.5)); gl_FragColor=vec4(mix(c1,c2,smoothstep(0.05,0.55,d)),1.0); }',
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      })
+    );
+    bg.position.set(0, 3, -20);
+    scene.add(bg);
+
+    // Framing matches the blueprint: front elevation, eye slightly above base.
+    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
+    const CAM_HOME = { pos: new THREE.Vector3(0, 3.2, 17), target: new THREE.Vector3(0, 2.8, 0) };
+    camera.position.copy(CAM_HOME.pos);
+    camera.lookAt(CAM_HOME.target);
+
+    // ── Lights (dramatic warm spotlight against a black void) ─────
+    // Low ambient = deep shadows; single strong warm key = sepia drama.
+    scene.add(new THREE.AmbientLight(0x3a2410, 0.18));
+
+    const key = new THREE.DirectionalLight(0xffcf88, 1.85);
+    key.position.set(3.5, 9, 6.5);
+    scene.add(key);
+
+    // Just enough warm fill to keep shadow corners from going crushed-black
+    const fill = new THREE.DirectionalLight(0x664424, 0.35);
+    fill.position.set(-4.5, 3, 3);
+    scene.add(fill);
+
+    // Warm back-rim makes the silhouette read against the black background
+    const rim = new THREE.DirectionalLight(0xe6b979, 0.75);
+    rim.position.set(0, 4, -9);
+    scene.add(rim);
+
+    // Subtle warm ground-bounce, very dim, keeps the palette consistent
+    const bounce = new THREE.HemisphereLight(0x2a1a08, 0x000000, 0.30);
+    scene.add(bounce);
+
+    // ── Materials (amber-sepia to match End Frame reference) ─────
+    // Muted saturation, warm cast, subtle emissive so the surfaces pick up
+    // a faint glow in shadow areas — pushes the "painted illustration" feel.
+    const marble = new THREE.MeshStandardMaterial({
+      color: 0xd4b378, roughness: 0.62, metalness: 0.02,
+      emissive: 0x201408, emissiveIntensity: 0.45,
+    });
+    const stone  = new THREE.MeshStandardMaterial({
+      color: 0x8a6a3a, roughness: 0.78, metalness: 0.02,
+      emissive: 0x120a03, emissiveIntensity: 0.35,
+    });
+    const gold   = new THREE.MeshStandardMaterial({
+      color: 0xe8c080, roughness: 0.25, metalness: 0.92,
+      emissive: 0x3a2a12, emissiveIntensity: 0.55,
+    });
+    const shade  = new THREE.MeshStandardMaterial({
+      color: 0x0a0603, roughness: 0.92, metalness: 0.0,
+    });
+
+    // ── Geometry: Taj Mahal ──────────────────────────────
+    // Proportions modeled to match the blueprint on the left — platform width
+    // ~12, main body ~5 wide × 3 tall, dome peaks around y≈7, minarets ~5 tall.
+    const taj = new THREE.Group();
+
+    // --- Platform (chabutra) ---
+    const platform = new THREE.Mesh(new THREE.BoxGeometry(12, 0.5, 8), stone);
+    platform.position.y = -0.25;
+    taj.add(platform);
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(11.4, 0.1, 7.4), marble);
+    plinth.position.y = 0.05;
+    taj.add(plinth);
+
+    // --- Main mausoleum body ---
+    const body = new THREE.Mesh(new THREE.BoxGeometry(5, 3, 5), marble);
+    body.position.y = 1.6;
+    taj.add(body);
+
+    // Chamfered corner pilasters (four thin tall boxes at the corners)
+    const pilasterGeom = new THREE.BoxGeometry(0.4, 3.1, 0.4);
+    [[-2.3, -2.3], [2.3, -2.3], [-2.3, 2.3], [2.3, 2.3]].forEach(([px, pz]) => {
+      const pil = new THREE.Mesh(pilasterGeom, marble);
+      pil.position.set(px, 1.6, pz);
+      taj.add(pil);
+    });
+
+    // Crown cornice on top of body
+    const cornice = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.2, 5.2), marble);
+    cornice.position.y = 3.2;
+    taj.add(cornice);
+
+    // --- Iwan (big central front arch, recessed) ---
+    const iwanRecess = new THREE.Mesh(new THREE.BoxGeometry(1.9, 2.3, 0.08), shade);
+    iwanRecess.position.set(0, 1.4, 2.52);
+    taj.add(iwanRecess);
+
+    // Arch top (rounded, created from a half-disc)
+    const iwanTopGeom = new THREE.RingGeometry(0, 0.95, 32, 1, 0, Math.PI);
+    const iwanTop = new THREE.Mesh(iwanTopGeom, shade);
+    iwanTop.position.set(0, 2.55, 2.525);
+    taj.add(iwanTop);
+
+    // Matching iwan on the back face
+    const iwanBack = iwanRecess.clone();
+    iwanBack.position.z = -2.52;
+    iwanBack.rotation.y = Math.PI;
+    taj.add(iwanBack);
+
+    // Smaller side arches (front)
+    [-1.7, 1.7].forEach(x => {
+      const sa = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.3, 0.06), shade);
+      sa.position.set(x, 0.85, 2.52);
+      taj.add(sa);
+    });
+
+    // --- Dome drum ---
+    const drum = new THREE.Mesh(new THREE.CylinderGeometry(1.75, 1.75, 1.1, 56), marble);
+    drum.position.y = 3.85;
+    taj.add(drum);
+
+    // Small decorative ring on drum
+    const drumRing = new THREE.Mesh(new THREE.TorusGeometry(1.78, 0.06, 12, 56), marble);
+    drumRing.rotation.x = Math.PI / 2;
+    drumRing.position.y = 4.4;
+    taj.add(drumRing);
+
+    // --- Onion dome via LatheGeometry ---
+    const onionPoints = [
+      new THREE.Vector2(0.00, 0.00),
+      new THREE.Vector2(1.75, 0.00),
+      new THREE.Vector2(1.95, 0.35),
+      new THREE.Vector2(2.02, 0.85),
+      new THREE.Vector2(2.00, 1.25),
+      new THREE.Vector2(1.82, 1.65),
+      new THREE.Vector2(1.30, 2.20),
+      new THREE.Vector2(0.75, 2.60),
+      new THREE.Vector2(0.32, 2.82),
+      new THREE.Vector2(0.14, 2.95),
+      new THREE.Vector2(0.00, 3.05),
+    ];
+    const dome = new THREE.Mesh(new THREE.LatheGeometry(onionPoints, 56), marble);
+    dome.position.y = 4.4;
+    taj.add(dome);
+
+    // --- Finial (gold spire atop dome) ---
+    const finialStem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.5, 12), gold);
+    finialStem.position.y = 7.70;
+    taj.add(finialStem);
+    const finialBall = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 16), gold);
+    finialBall.position.y = 7.50;
+    taj.add(finialBall);
+    const finialTip = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.35, 12), gold);
+    finialTip.position.y = 8.15;
+    taj.add(finialTip);
+
+    // --- Four corner chhatris (small kiosks on main body) ---
+    [[-1.75, -1.75], [1.75, -1.75], [-1.75, 1.75], [1.75, 1.75]].forEach(([cx, cz]) => {
+      const ch = new THREE.Group();
+      // 4 tiny corner columns
+      [[-0.25, -0.25], [0.25, -0.25], [-0.25, 0.25], [0.25, 0.25]].forEach(([dx, dz]) => {
+        const col = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.55, 10), marble);
+        col.position.set(dx, 0.3, dz);
+        ch.add(col);
+      });
+      // Platform between columns and dome
+      const cPlat = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.06, 18), marble);
+      cPlat.position.y = 0.58;
+      ch.add(cPlat);
+      // Small onion-ish dome
+      const smDome = new THREE.Mesh(
+        new THREE.SphereGeometry(0.34, 20, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+        marble
+      );
+      smDome.position.y = 0.6;
+      smDome.scale.y = 1.05;
+      ch.add(smDome);
+      // Tiny gold finial
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.24, 10), gold);
+      tip.position.y = 1.05;
+      ch.add(tip);
+      ch.position.set(cx, 3.3, cz);
+      taj.add(ch);
+    });
+
+    // --- Four minarets at corners of platform ---
+    const minaretGroup = new THREE.Group();
+    [[-5.0, -3.0], [5.0, -3.0], [-5.0, 3.0], [5.0, 3.0]].forEach(([mx, mz]) => {
+      const m = new THREE.Group();
+      // Base cube
+      const base = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.35, 0.7), marble);
+      base.position.y = 0.2;
+      m.add(base);
+      // Tapered shaft in 3 stages with balcony rings between them
+      const stages = [
+        { y: 1.2, r1: 0.30, r2: 0.34, h: 1.6 },
+        { y: 2.8, r1: 0.27, r2: 0.30, h: 1.5 },
+        { y: 4.2, r1: 0.24, r2: 0.27, h: 1.2 },
+      ];
+      stages.forEach(s => {
+        const seg = new THREE.Mesh(new THREE.CylinderGeometry(s.r1, s.r2, s.h, 20), marble);
+        seg.position.y = s.y;
+        m.add(seg);
+      });
+      // Balcony rings
+      [2.0, 3.55].forEach(by => {
+        const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.10, 20), marble);
+        ring.position.y = by;
+        m.add(ring);
+      });
+      // Top kiosk (chhatri-style cap)
+      const topCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.3, 16), marble);
+      topCyl.position.y = 4.95;
+      m.add(topCyl);
+      const mDome = new THREE.Mesh(
+        new THREE.SphereGeometry(0.3, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2),
+        marble
+      );
+      mDome.position.y = 5.10;
+      m.add(mDome);
+      // Tiny gold finial
+      const mFinial = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.28, 10), gold);
+      mFinial.position.y = 5.55;
+      m.add(mFinial);
+
+      m.position.set(mx, 0, mz);
+      minaretGroup.add(m);
+    });
+    taj.add(minaretGroup);
+
+    // --- Reflection pool — darker, with a touch of sheen ---
+    const pool = new THREE.Mesh(
+      new THREE.PlaneGeometry(2, 6),
+      new THREE.MeshStandardMaterial({
+        color: 0x0a0503, roughness: 0.12, metalness: 0.35,
+      })
+    );
+    pool.rotation.x = -Math.PI / 2;
+    pool.position.set(0, 0.06, 6);
+    taj.add(pool);
+
+    // Ground — near-black so the building floats like in the End Frame
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(60, 60),
+      new THREE.MeshStandardMaterial({ color: 0x050302, roughness: 1 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.55;
+    scene.add(ground);
+
+    scene.add(taj);
+
+    // ── Controls (only become interactive past the end of the scroll) ──
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.target.copy(CAM_HOME.target);
+    controls.minDistance  = 10;
+    controls.maxDistance  = 32;
+    controls.minPolarAngle = 0.25;
+    controls.maxPolarAngle = Math.PI / 2 + 0.1;
+    controls.enablePan  = false;
+    controls.rotateSpeed = 0.6;
+    controls.enabled = false;   // user orbit disabled until reveal completes
+
+    let userOrbited = false;
+    controls.addEventListener('start', () => { userOrbited = true; });
+
+    reset && reset.addEventListener('click', () => {
+      // Ease camera back to the blueprint-matching home view
+      const startPos = camera.position.clone();
+      const startTgt = controls.target.clone();
+      const endPos   = CAM_HOME.pos.clone();
+      const endTgt   = CAM_HOME.target.clone();
+      const t0 = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - t0) / 700);
+        const e = 1 - Math.pow(1 - t, 3);
+        camera.position.lerpVectors(startPos, endPos, e);
+        controls.target.lerpVectors(startTgt, endTgt, e);
+        if (t < 1) requestAnimationFrame(step);
+        else { userOrbited = false; taj.rotation.y = 0; }
+      }
+      requestAnimationFrame(step);
+    });
+
+    // ── Size ──────────────────────────────────────────────
+    const stage = canvas.parentElement;  // .stage
+    function resize() {
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    // ── Scroll-driven transition ──────────────────────────
+    // p=0 → blueprint fully opaque, 3D camera pulled slightly back
+    // p=~0.35 → blueprint starts fading, model starts rotating
+    // p=~0.85 → blueprint fully gone, camera at home, controls go live
+    function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+    function smoothstep(e0, e1, v) {
+      const t = clamp((v - e0) / (e1 - e0), 0, 1);
+      return t * t * (3 - 2 * t);
+    }
+
+    let scrollP = 0;
+    function readScroll() {
+      const rect = track.getBoundingClientRect();
+      const scrollable = track.offsetHeight - window.innerHeight;
+      if (scrollable <= 0) return 0;
+      return clamp(-rect.top / scrollable, 0, 1);
+    }
+
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; scrollP = readScroll(); updateHUD(scrollP); }); }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+
+    function updateHUD(p) {
+      if (rail) rail.style.height = (p * 100).toFixed(2) + '%';
+
+      let idxLabel, titleLabel, subLabel;
+      if (p < 0.35)       { idxLabel = '01 / 03'; titleLabel = 'Blueprint';    subLabel = 'Pen & paper'; }
+      else if (p < 0.80)  { idxLabel = '02 / 03'; titleLabel = 'Lifting off';  subLabel = 'Paper to stone'; }
+      else                { idxLabel = '03 / 03'; titleLabel = '3D Model';     subLabel = 'Drag to orbit'; }
+      if (hudIdx   && hudIdx.textContent   !== idxLabel)   hudIdx.textContent   = idxLabel;
+      if (hudTitle && hudTitle.textContent !== titleLabel) hudTitle.textContent = titleLabel;
+      if (hudSub   && hudSub.textContent   !== subLabel)   hudSub.textContent   = subLabel;
+
+      if (cue) cue.style.opacity = p > 0.04 ? '0' : '1';
+    }
+
+    // ── Render loop ───────────────────────────────────────
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const p = scrollP;
+
+      // Blueprint crossfade — linger on blueprint for the first third,
+      // fade cleanly across the middle, fully gone past 0.75.
+      const bpOpacity = 1 - smoothstep(0.25, 0.72, p);
+      blueprint.style.opacity = bpOpacity.toFixed(3);
+
+      // Camera: start slightly farther & higher, ease to CAM_HOME as the
+      // blueprint fades. Feels like the paper pulls back to reveal the model.
+      if (!userOrbited) {
+        const ease = smoothstep(0.0, 0.85, p);
+        camera.position.set(
+          0,
+          3.8 - 0.6 * ease,
+          19 - 2.0 * ease
+        );
+        controls.target.set(0, 2.8, 0);
+        camera.lookAt(controls.target);
+
+        // Gentle rotation during + after reveal so the 3D-ness is obvious
+        taj.rotation.y = p * Math.PI * 0.35;
+      }
+
+      // Past 0.85 scroll, hand control over to the user
+      const orbitable = p > 0.85;
+      controls.enabled = orbitable;
+      if (hint)  hint.classList.toggle('is-on',  orbitable);
+      if (reset) reset.classList.toggle('is-on', orbitable);
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // Initial read + first paint
+    scrollP = readScroll();
+    updateHUD(scrollP);
+    animate();
+  })();
+  </script>
+</body>
+</html>

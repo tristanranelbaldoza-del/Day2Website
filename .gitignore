@@ -8,3 +8,4 @@ temporary screenshots/
 # Local env secrets
 .env
 .env.*
+!.env.example
