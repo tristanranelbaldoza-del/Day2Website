@@ -363,17 +363,38 @@
       padding: 20px 0;
       background: linear-gradient(180deg, rgba(198,165,89,0.03), transparent);
     }
+    /* Rail always renders on one row. Tags spread across the full width
+       (no empty gap at the right) until the viewport gets small enough
+       that content starts to overflow — at which point the row scrolls
+       horizontally with a hidden scrollbar. */
     .rail__inner {
-      display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px;
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: clamp(10px, 2vw, 28px);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      letter-spacing: 0.2em; text-transform: uppercase;
+      font-size: clamp(9px, 1vw, 11px);
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
       color: var(--cream-fade);
+      white-space: nowrap;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
+    .rail__inner::-webkit-scrollbar { display: none; }
     .rail__tag {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding-right: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding-right: clamp(12px, 2vw, 28px);
       border-right: 1px solid var(--rule);
+      flex-shrink: 0;
+      white-space: nowrap;
     }
     .rail__tag:last-of-type { border-right: 0; padding-right: 0; }
     .rail__tag::before {
@@ -381,6 +402,7 @@
       width: 6px; height: 6px; border-radius: 999px;
       background: var(--gold);
       box-shadow: 0 0 10px rgba(230,185,121,0.55);
+      flex-shrink: 0;
     }
     .rail__tag.dim { color: var(--cream-mute); }
     .rail__tag.dim::before { background: rgba(198,165,89,0.4); box-shadow: none; }
@@ -732,6 +754,43 @@
     .node.n-ring    { left: 82%; top: 78%; }
     .node.n-band    { left: 50%; top: 14%; }
     .node.n-app     { left: 50%; top: 90%; }
+
+    /* Mobile layout: compact square, tighter positions, smaller pucks.
+       Buds/Ring are moved up and BAND/APP pushed to the edges so nothing
+       collides at ≤ 320px widths. The decorative dashed connectors are
+       hidden on mobile — they'd mis-terminate relative to the repositioned
+       nodes (lines are laid out in desktop coordinates). */
+    @media (max-width: 720px) {
+      .diagram {
+        aspect-ratio: 1 / 1;
+      }
+      .diagram__lines { display: none; }
+      .node { gap: 4px; }
+      .node__puck {
+        width: 38px; height: 38px;
+        border-radius: 11px;
+      }
+      .node__puck.center {
+        width: 54px; height: 54px;
+      }
+      .node__puck svg { width: 15px; height: 15px; }
+      .node__puck.center svg { width: 22px; height: 22px; }
+      .node__label {
+        font-size: 9px;
+        letter-spacing: 0.14em;
+        max-width: 10ch;
+        text-align: center;
+        line-height: 1.15;
+      }
+      /* Pull BAND / APP to the outermost rows; Buds/Ring up toward
+         center so their labels clear APP's puck even at 320px. */
+      .node.n-band  { top: 6%;  }
+      .node.n-watch { top: 28%; }
+      .node.n-vision{ top: 28%; }
+      .node.n-buds  { top: 72%; }
+      .node.n-ring  { top: 72%; }
+      .node.n-app   { top: 94%; }
+    }
 
     .diagram__lines {
       position: absolute; inset: 0; pointer-events: none;
