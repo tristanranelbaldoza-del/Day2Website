@@ -10,6 +10,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
+  <!-- Three.js loaded once for the Tester Hub 3D model -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+
   <style>
     /* ══════════════════════════════════════════════════════
        TOKENS
@@ -603,6 +612,15 @@
       stroke-width: 1.1;
       stroke-linecap: round; stroke-linejoin: round;
       filter: drop-shadow(0 0 18px rgba(230,185,121,0.25));
+    }
+    /* Full-bleed canvas for the Tester Hub 3D model; sits on top of the
+       card stage gradient. pointer-events: none so card hover glow keeps
+       working through the canvas. */
+    .card__stage canvas.illo-3d {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      display: block;
+      pointer-events: none;
     }
     .card h3 {
       font-family: 'Bricolage Grotesque', sans-serif;
@@ -1407,31 +1425,13 @@
           </a>
         </article>
 
-        <!-- 03 Tester Hub (smart speaker / assistant, SVG) -->
+        <!-- 03 Tester Hub (smart speaker — real 3D model via Three.js) -->
         <article class="card" data-card>
           <span class="card__tag">03 · Home · TST-HUB</span>
           <div class="card__stage">
-            <svg class="illo" viewBox="0 0 200 200" aria-hidden="true">
-              <!-- Body (cylinder, front face) -->
-              <ellipse cx="100" cy="36" rx="56" ry="10" />
-              <path d="M44 36 L44 158" />
-              <path d="M156 36 L156 158" />
-              <ellipse cx="100" cy="158" rx="56" ry="10" />
-              <!-- Mesh bands -->
-              <ellipse cx="100" cy="58" rx="56" ry="9" opacity="0.35" />
-              <ellipse cx="100" cy="78" rx="56" ry="9" opacity="0.55" />
-              <ellipse cx="100" cy="98" rx="56" ry="9" opacity="0.75" />
-              <ellipse cx="100" cy="118" rx="56" ry="9" opacity="0.55" />
-              <ellipse cx="100" cy="138" rx="56" ry="9" opacity="0.35" />
-              <!-- Top light ring -->
-              <ellipse cx="100" cy="30" rx="38" ry="6" opacity="0.9" />
-              <circle cx="100" cy="30" r="2.5" fill="currentColor" stroke="none" opacity="0.9" />
-              <!-- Base shadow -->
-              <ellipse cx="100" cy="172" rx="48" ry="3" opacity="0.25" />
-              <!-- Callout -->
-              <path d="M156 70 L178 70" stroke-dasharray="3 4" opacity="0.55" />
-              <text x="178" y="73" font-family="JetBrains Mono, monospace" font-size="6" fill="currentColor" stroke="none" opacity="0.7">MIC × 6</text>
-            </svg>
+            <canvas id="hubModel" class="illo-3d"
+                    aria-label="Tester Hub — 3D model of the smart speaker, slowly rotating"
+                    role="img"></canvas>
           </div>
           <h3>Tester Hub</h3>
           <p class="card__tagline">Room-filling spatial audio. On-device voice model.</p>
@@ -2212,6 +2212,221 @@
         });
       });
     })();
+  </script>
+
+  <!-- ════════════════════════════════════════════════════
+       TESTER HUB · 3D MODEL (smart speaker)
+       Aluminum end caps, fabric-grille body, gold LED ring on top.
+       Auto-rotates, pulses the ring, pauses when off-screen.
+  ════════════════════════════════════════════════════ -->
+  <script type="module">
+  import * as THREE from 'three';
+
+  (function () {
+    const canvas = document.getElementById('hubModel');
+    if (!canvas || !canvas.getContext) return;
+
+    // Renderer (transparent so the card gradient shows through)
+    const renderer = new THREE.WebGLRenderer({
+      canvas, antialias: true, alpha: true, powerPreference: 'high-performance',
+    });
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.35;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 50);
+    camera.position.set(0, 1.1, 8.2);
+    camera.lookAt(0, 0, 0);
+
+    // Lights — brighter warm stage so the hub is clearly readable
+    scene.add(new THREE.AmbientLight(0x5a4326, 0.55));
+    const key = new THREE.DirectionalLight(0xffe3b8, 2.1);
+    key.position.set(3.5, 6, 4.5);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xb8925c, 0.7);
+    fill.position.set(-4, 2, 3);
+    scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xf0cf8a, 0.85);
+    rim.position.set(0, 2.5, -4.5);
+    scene.add(rim);
+    // Tiny gold stage light above the ring so the top edge picks up a glint
+    const topSpot = new THREE.PointLight(0xe6b979, 0.9, 6, 2);
+    topSpot.position.set(0, 3.2, 0.4);
+    scene.add(topSpot);
+    scene.add(new THREE.HemisphereLight(0x5a3e1e, 0x150d05, 0.5));
+
+    // Procedural fabric-grille texture for the speaker body —
+    // brighter base so the grille reads in the warm card gradient.
+    function makeGrilleTexture() {
+      const c = document.createElement('canvas');
+      c.width = 8; c.height = 80;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#52412d';
+      ctx.fillRect(0, 0, 8, 80);
+      ctx.fillStyle = '#6c573c';
+      for (let y = 0; y < 80; y += 4) ctx.fillRect(0, y, 8, 1);
+      ctx.fillStyle = 'rgba(230,185,121,0.22)';
+      for (let y = 2; y < 80; y += 4) ctx.fillRect(0, y, 8, 1);
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(12, 1);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 4;
+      return tex;
+    }
+    const grille = makeGrilleTexture();
+
+    // Materials — lifted out of shadow with warmer mid-tones.
+    const aluminum = new THREE.MeshStandardMaterial({
+      color: 0x5a4a3a, roughness: 0.42, metalness: 0.72,
+    });
+    const aluminumBrushed = new THREE.MeshStandardMaterial({
+      color: 0x6e5a43, roughness: 0.52, metalness: 0.6,
+    });
+    const fabric = new THREE.MeshStandardMaterial({
+      map: grille, roughness: 0.88, metalness: 0.02,
+      color: 0xe5cea0,
+    });
+    const topPlate = new THREE.MeshStandardMaterial({
+      color: 0x3b2f20, roughness: 0.55, metalness: 0.4,
+    });
+    const gold = new THREE.MeshStandardMaterial({
+      color: 0xf2cc8d, roughness: 0.22, metalness: 0.9,
+      emissive: 0xd5a35e, emissiveIntensity: 2.2,
+    });
+
+    // Assemble the hub
+    const hub = new THREE.Group();
+
+    // Base plinth (bottom)
+    const plinth = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.10, 1.18, 0.18, 56),
+      aluminum
+    );
+    plinth.position.y = -1.45;
+    hub.add(plinth);
+
+    // Lower aluminum ring between plinth and fabric
+    const lowerRing = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.06, 1.10, 0.22, 56),
+      aluminumBrushed
+    );
+    lowerRing.position.y = -1.24;
+    hub.add(lowerRing);
+
+    // Fabric grille body (main mass)
+    const body = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.02, 1.06, 2.25, 56),
+      fabric
+    );
+    body.position.y = 0;
+    hub.add(body);
+
+    // Subtle horizontal seam lines every 0.5 units for depth
+    for (let i = 0; i < 5; i++) {
+      const seam = new THREE.Mesh(
+        new THREE.TorusGeometry(1.035, 0.008, 8, 56),
+        new THREE.MeshStandardMaterial({ color: 0x1a1510, roughness: 0.8 })
+      );
+      seam.rotation.x = Math.PI / 2;
+      seam.position.y = -1.0 + i * 0.5;
+      hub.add(seam);
+    }
+
+    // Upper aluminum ring
+    const upperRing = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.08, 1.02, 0.24, 56),
+      aluminumBrushed
+    );
+    upperRing.position.y = 1.25;
+    hub.add(upperRing);
+
+    // Top disc (control surface)
+    const topDisc = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.02, 1.08, 0.14, 56),
+      topPlate
+    );
+    topDisc.position.y = 1.44;
+    hub.add(topDisc);
+
+    // Top disc bevel highlight (thin gold-ish ring inside)
+    const bezel = new THREE.Mesh(
+      new THREE.TorusGeometry(0.95, 0.018, 10, 64),
+      aluminumBrushed
+    );
+    bezel.rotation.x = Math.PI / 2;
+    bezel.position.y = 1.515;
+    hub.add(bezel);
+
+    // Gold LED ring (signature glow)
+    const ledRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.70, 0.04, 18, 80),
+      gold
+    );
+    ledRing.rotation.x = Math.PI / 2;
+    ledRing.position.y = 1.535;
+    hub.add(ledRing);
+
+    // Center indicator (small dot)
+    const dot = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.07, 0.07, 0.03, 24),
+      gold
+    );
+    dot.position.y = 1.535;
+    hub.add(dot);
+
+    // Cast-shadow footprint — lighter now so it grounds without muddying.
+    const footprint = new THREE.Mesh(
+      new THREE.CircleGeometry(1.5, 48),
+      new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.25 })
+    );
+    footprint.rotation.x = -Math.PI / 2;
+    footprint.position.y = -1.54;
+    hub.add(footprint);
+
+    // Slight forward tilt so the top is visible in the framed view
+    hub.rotation.x = -0.08;
+    scene.add(hub);
+
+    // Size
+    function resize() {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    // Pause render loop when off-screen
+    let visible = true;
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => visible = e.isIntersecting);
+      }, { threshold: 0.02 });
+      io.observe(canvas);
+    }
+
+    // Respect reduced motion (no rotation / no pulse)
+    const reducedMotion = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!visible) return;
+      if (!reducedMotion) {
+        hub.rotation.y += 0.0055;
+        const t = performance.now() * 0.0013;
+        ledRing.material.emissiveIntensity = 2.0 + Math.sin(t) * 0.7;
+      }
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
   </script>
 </body>
 </html>
