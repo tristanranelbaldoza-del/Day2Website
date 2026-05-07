@@ -52,3 +52,24 @@
 - Do not stop after one screenshot pass
 - Do not use `transition-all`
 - Do not use default Tailwind blue/indigo as primary color
+
+## Brand Voice — PawPrint Tees
+
+- **Brand:** PawPrint Tees — dog-themed apparel for dog parents.
+- **Tone:** Fun, warm, dog-obsessed. Casual but never sloppy — like talking to a fellow dog parent. Humor and emotion welcome; corporate-speak never.
+- **Audience:** Dog owners aged 25–45, primarily women, active on Instagram and TikTok.
+- **Pillars:**
+  1. Product showcases
+  2. Dog owner lifestyle
+  3. Behind-the-scenes
+  4. Customer dogs / UGC
+  5. Dog tips & humor
+- **Hashtags:** `#PawPrintTees` `#WearYourDog` `#DogMom` `#DogDad` `#PetFashion`
+- **Visual Style:** Bright and warm. Brand palette — Coral `#FF6B6B`, Navy `#1E3A5F`, Cream `#FFF8F0`. Lifestyle photos featuring dogs as the focal point; never sterile studio shots.
+
+## Brand Visual Settings (PawPrint Tees)
+- Colors: `#FF6B6B` (coral), `#1E3A5F` (navy), `#FFF8F0` (cream)
+- Style: Bright, warm, playful
+- Tone: Fun, dog-obsessed, casual but polished
+- Logo: PawPrint Tees wordmark
+- Always include a CTA on the final slide

@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Verda Wellness — Coaching Application</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..600,0..100,0..1;1,9..144,300..600,0..100,0..1&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --cream: #F2E9D6;
+    --cream-soft: #FAF5EA;
+    --sage-pale: #E2EAD5;
+    --sage: #C9D4BC;
+    --sage-deep: #8FA582;
+    --moss: #3F5F3F;
+    --forest: #1F2E22;
+    --white: #FDFCF7;
+    --line: rgba(31, 46, 34, 0.16);
+    --line-strong: rgba(31, 46, 34, 0.55);
+    --warning: #B8762F;
+    --danger: #A04938;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { background: var(--cream-soft); }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 400;
+    color: var(--forest);
+    background:
+      radial-gradient(ellipse 80% 50% at 90% 0%, rgba(201, 212, 188, 0.45), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 0% 100%, rgba(242, 233, 214, 0.7), transparent 60%),
+      var(--cream-soft);
+    min-height: 100vh;
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+  }
+
+  .shell {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px 32px 40px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 36px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--moss);
+  }
+
+  .wordmark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 19px;
+    font-variation-settings: "SOFT" 80, "opsz" 24;
+    letter-spacing: -0.025em;
+    text-transform: none;
+    color: var(--forest);
+  }
+
+  .wordmark svg { width: 26px; height: 26px; flex-shrink: 0; }
+  .wordmark .dot { color: var(--sage-deep); margin: 0 2px; }
+
+  .topbar-meta { display: flex; gap: 28px; align-items: center; }
+  .topbar-meta .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+  .topbar-meta .pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--sage-deep);
+    box-shadow: 0 0 0 3px rgba(143, 165, 130, 0.25);
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 36px;
+    flex: 1;
+    align-items: stretch;
+  }
+
+  /* Intro panel */
+  .intro {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(143, 165, 130, 0.45), transparent 55%),
+      radial-gradient(circle at 80% 25%, rgba(250, 245, 234, 0.7), transparent 50%),
+      linear-gradient(168deg, #DDE5D2 0%, #BCCBAB 100%);
+    border-radius: 28px;
+    padding: 56px 52px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 640px;
+    border: 1px solid rgba(63, 95, 63, 0.08);
+  }
+
+  .botanical { position: absolute; pointer-events: none; }
+  .botanical-1 { top: -50px; right: -70px; width: 320px; opacity: 0.55; transform: rotate(18deg); }
+  .botanical-2 { bottom: -60px; left: -70px; width: 260px; opacity: 0.42; transform: rotate(-22deg); }
+
+  .intro-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--moss);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .intro-eyebrow::before {
+    content: '';
+    width: 22px; height: 1px;
+    background: var(--moss);
+  }
+
+  .intro-headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-variation-settings: "SOFT" 80, "opsz" 144, "WONK" 0;
+    font-size: clamp(40px, 5vw, 68px);
+    line-height: 0.98;
+    letter-spacing: -0.038em;
+    color: var(--forest);
+    margin: 28px 0 22px;
+  }
+
+  .intro-headline em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--moss);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+  }
+
+  .intro-sub {
+    max-width: 36ch;
+    color: rgba(31, 46, 34, 0.72);
+    font-size: 15.5px;
+    line-height: 1.65;
+  }
+
+  .intro-quote {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(31, 46, 34, 0.18);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-variation-settings: "opsz" 14, "WONK" 1;
+    font-size: 16px;
+    color: var(--moss);
+    max-width: 38ch;
+    line-height: 1.5;
+  }
+
+  .intro-quote::before { content: '“'; margin-right: 2px; }
+  .intro-quote::after { content: '”'; }
+
+  .intro-quote-attr {
+    display: block;
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(63, 95, 63, 0.65);
+  }
+
+  /* Form panel */
+  .form-panel {
+    position: relative;
+    background: var(--white);
+    border-radius: 28px;
+    padding: 56px 56px 52px;
+    border: 1px solid rgba(31, 46, 34, 0.06);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 30px 60px -30px rgba(63, 95, 63, 0.18),
+      0 8px 22px -10px rgba(63, 95, 63, 0.08);
+  }
+
+  .form-panel::after {
+    content: '';
+    position: absolute;
+    top: 24px; right: 24px;
+    width: 8px; height: 8px;
+    border-radius: 999px;
+    background: var(--sage-deep);
+    box-shadow: 0 0 0 4px rgba(143, 165, 130, 0.2);
+  }
+
+  .form-header { margin-bottom: 36px; }
+
+  .form-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-variation-settings: "SOFT" 60, "opsz" 36;
+    font-size: 29px;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin: 0 0 8px;
+    color: var(--forest);
+  }
+  .form-title em {
+    font-style: italic;
+    color: var(--moss);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 36;
+  }
+
+  .form-subtitle {
+    font-size: 13.5px;
+    color: rgba(31, 46, 34, 0.6);
+    margin: 0;
+  }
+
+  form { display: flex; flex-direction: column; gap: 30px; }
+
+  .field { position: relative; }
+
+  .field-label {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--moss);
+    margin-bottom: 12px;
+  }
+  .field-num {
+    color: rgba(63, 95, 63, 0.5);
+    font-weight: 500;
+  }
+
+  .input, .select, .textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 6px 0 12px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--forest);
+    outline: none;
+    transition: border-color 240ms ease, padding-bottom 240ms ease;
+    border-radius: 0;
+  }
+  .input:focus, .select:focus, .textarea:focus { border-color: var(--moss); }
+  .input::placeholder, .textarea::placeholder { color: rgba(31, 46, 34, 0.32); }
+
+  .select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%233F5F3F' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    padding-right: 28px;
+    cursor: pointer;
+    color: rgba(31, 46, 34, 0.32);
+  }
+  .select.has-value { color: var(--forest); }
+  .select option { color: var(--forest); }
+
+  .textarea {
+    resize: none;
+    height: 60px;
+    line-height: 1.5;
+  }
+
+  .field-counter {
+    display: block;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    color: rgba(63, 95, 63, 0.6);
+    transition: color 200ms ease;
+    text-align: right;
+  }
+  .field-counter.warning { color: var(--warning); }
+  .field-counter.danger { color: var(--danger); font-weight: 500; }
+
+  /* Commitment checkbox */
+  .commit {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 20px 22px;
+    background: var(--cream);
+    border-radius: 16px;
+    border: 1px solid rgba(63, 95, 63, 0.1);
+    cursor: pointer;
+    transition: border-color 200ms ease, background 200ms ease;
+  }
+  .commit:hover { border-color: rgba(63, 95, 63, 0.25); }
+  .commit input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border: 1.5px solid var(--moss);
+    border-radius: 6px;
+    background: var(--white);
+    cursor: pointer;
+    position: relative;
+    margin: 2px 0 0;
+    transition: background 180ms ease, transform 180ms ease;
+  }
+  .commit input:checked { background: var(--moss); transform: scale(1.04); }
+  .commit input:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px; top: 1px;
+    width: 6px; height: 12px;
+    border: solid var(--cream-soft);
+    border-width: 0 2px 2px 0;
+    transform: rotate(42deg);
+  }
+  .commit input:focus-visible { outline: 2px solid var(--moss); outline-offset: 3px; }
+
+  .commit-text {
+    font-size: 13.5px;
+    color: var(--forest);
+    line-height: 1.6;
+  }
+  .commit-text strong {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-variation-settings: "SOFT" 60, "opsz" 14;
+    font-size: 14.5px;
+    display: block;
+    margin-bottom: 2px;
+    color: var(--forest);
+  }
+  .commit-text strong .price {
+    font-style: italic;
+    color: var(--moss);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 14;
+  }
+
+  /* Submit */
+  .submit {
+    appearance: none;
+    border: none;
+    background: var(--forest);
+    color: var(--cream-soft);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    font-size: 13.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 18px 28px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    transition: opacity 240ms ease, transform 240ms ease, background 240ms ease, box-shadow 240ms ease;
+    box-shadow: 0 8px 20px -8px rgba(31, 46, 34, 0.4);
+  }
+  .submit[disabled] {
+    background: rgba(31, 46, 34, 0.18);
+    color: rgba(255, 255, 255, 0.78);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .submit:not([disabled]):hover {
+    background: var(--moss);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px -10px rgba(63, 95, 63, 0.5);
+  }
+  .submit:not([disabled]):active { transform: translateY(0); }
+  .submit:focus-visible { outline: 2px solid var(--moss); outline-offset: 3px; }
+  .submit-arrow { transition: transform 240ms ease; }
+  .submit:not([disabled]):hover .submit-arrow { transform: translateX(4px); }
+
+  /* Form fade-out */
+  .form.fade-out { animation: fadeOut 480ms cubic-bezier(0.4, 0, 0.6, 1) forwards; }
+  @keyframes fadeOut {
+    to { opacity: 0; transform: translateY(-12px); filter: blur(2px); }
+  }
+
+  /* Success state */
+  .success {
+    display: none;
+    text-align: center;
+    padding: 70px 24px 40px;
+  }
+  .success.show {
+    display: block;
+    animation: rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .success-mark {
+    width: 96px; height: 96px;
+    margin: 0 auto 32px;
+    display: block;
+  }
+  .success-mark .ring {
+    fill: none;
+    stroke: var(--sage-deep);
+    stroke-width: 1.6;
+    stroke-dasharray: 295;
+    stroke-dashoffset: 295;
+    animation: draw 800ms 220ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    transform-origin: center;
+  }
+  .success-mark .ring-inner {
+    fill: var(--sage-pale);
+    opacity: 0;
+    animation: fadeIn 500ms 1100ms ease forwards;
+    transform-origin: center;
+  }
+  .success-mark .check {
+    fill: none;
+    stroke: var(--moss);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: draw 520ms 880ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .success-headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-variation-settings: "SOFT" 80, "opsz" 144;
+    font-size: clamp(36px, 4.4vw, 52px);
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    margin: 0 0 16px;
+    color: var(--forest);
+  }
+  .success-headline em {
+    font-style: italic;
+    color: var(--moss);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+  }
+
+  .success-body {
+    max-width: 38ch;
+    margin: 0 auto;
+    color: rgba(31, 46, 34, 0.62);
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+
+  .success-meta {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(63, 95, 63, 0.6);
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    align-items: center;
+  }
+  .success-meta .sep { width: 4px; height: 4px; border-radius: 999px; background: rgba(63, 95, 63, 0.4); }
+
+  /* Entrance animations */
+  .intro, .form-panel { opacity: 0; transform: translateY(14px); animation: fadeIn 800ms 80ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+  .form-panel { animation-delay: 220ms; }
+
+  .field, .commit, .submit {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fieldIn 600ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .field:nth-of-type(1) { animation-delay: 380ms; }
+  .field:nth-of-type(2) { animation-delay: 460ms; }
+  .field:nth-of-type(3) { animation-delay: 540ms; }
+  .field:nth-of-type(4) { animation-delay: 620ms; }
+  .field:nth-of-type(5) { animation-delay: 700ms; }
+  .commit { animation-delay: 780ms; }
+  .submit { animation-delay: 860ms; }
+
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  @keyframes fieldIn { to { opacity: 1; transform: translateY(0); } }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; gap: 24px; }
+    .intro { min-height: 380px; padding: 44px 36px; }
+    .form-panel { padding: 40px 30px 36px; }
+    .shell { padding: 20px; }
+    .topbar { padding-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+    .topbar-meta { gap: 12px; }
+  }
+
+  @media (max-width: 520px) {
+    .form-panel { padding: 32px 22px 28px; }
+    .intro { padding: 36px 26px; }
+    .botanical-1 { width: 220px; right: -50px; top: -30px; }
+    .botanical-2 { width: 180px; left: -50px; bottom: -50px; }
+    .topbar-meta .pill:not(:last-child) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="wordmark" aria-label="Verda Wellness">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 4C16 13 8 13.5 8 21.5C8 27 11.5 30 16 30C20.5 30 24 27 24 21.5C24 13.5 16 13 16 4Z" stroke="#3F5F3F" stroke-width="1.5"/>
+        <path d="M16 30V13" stroke="#3F5F3F" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M16 22L20 18" stroke="#3F5F3F" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M16 25L12 21" stroke="#3F5F3F" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span>Verda<span class="dot">·</span>Wellness</span>
+    </div>
+    <div class="topbar-meta">
+      <span class="pill">Cohort 07 · Open</span>
+      <span>Est. 2019</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="intro">
+      <svg class="botanical botanical-1" viewBox="0 0 200 240" fill="none" aria-hidden="true">
+        <path d="M100 230 Q100 160 102 90 Q104 30 110 10" stroke="#3F5F3F" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+        <path d="M101 200 Q70 192 48 168 Q72 188 100 195" fill="#8FA582" opacity="0.55"/>
+        <path d="M102 175 Q132 168 156 142 Q132 165 103 173" fill="#8FA582" opacity="0.55"/>
+        <path d="M101 145 Q72 138 50 112 Q74 134 100 142" fill="#8FA582" opacity="0.5"/>
+        <path d="M103 115 Q134 108 156 82 Q132 105 105 113" fill="#8FA582" opacity="0.5"/>
+        <path d="M101 88 Q76 82 58 60 Q78 80 101 87" fill="#8FA582" opacity="0.45"/>
+        <path d="M104 60 Q126 54 144 32 Q124 52 105 60" fill="#8FA582" opacity="0.45"/>
+        <circle cx="110" cy="10" r="3" fill="#3F5F3F"/>
+      </svg>
+      <svg class="botanical botanical-2" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+        <path d="M30 180 Q70 130 110 90 Q150 50 180 30" stroke="#3F5F3F" stroke-width="1" fill="none" stroke-linecap="round"/>
+        <ellipse cx="65" cy="138" rx="22" ry="9" fill="#8FA582" opacity="0.45" transform="rotate(-30 65 138)"/>
+        <ellipse cx="105" cy="98" rx="22" ry="9" fill="#8FA582" opacity="0.5" transform="rotate(-30 105 98)"/>
+        <ellipse cx="145" cy="60" rx="22" ry="9" fill="#8FA582" opacity="0.55" transform="rotate(-30 145 60)"/>
+      </svg>
+
+      <div>
+        <span class="intro-eyebrow">Application</span>
+        <h1 class="intro-headline">Begin a quieter <em>chapter</em>.</h1>
+        <p class="intro-sub">Twelve weeks of guided practice with a coach who actually picks up the phone. Honest conversation, gentle structure, and the room to change without performing.</p>
+      </div>
+
+      <blockquote class="intro-quote">
+        I came in wanting energy and left with something I didn't expect — patience with myself.
+        <span class="intro-quote-attr">Maren K. · Cohort 04</span>
+      </blockquote>
+    </aside>
+
+    <section class="form-panel">
+      <header class="form-header">
+        <h2 class="form-title">Tell us a little <em>about you</em>.</h2>
+        <p class="form-subtitle">Five questions, two minutes. Answers stay private; we read every application by hand.</p>
+      </header>
+
+      <form id="appForm" class="form" novalidate autocomplete="on">
+        <div class="field">
+          <label class="field-label" for="name"><span class="field-num">01</span><span>Full name</span></label>
+          <input class="input" id="name" name="name" type="text" placeholder="Ada Okonkwo" required autocomplete="name" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="email"><span class="field-num">02</span><span>Email</span></label>
+          <input class="input" id="email" name="email" type="email" placeholder="ada@example.com" required autocomplete="email" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="situation"><span class="field-num">03</span><span>What brings you here?</span></label>
+          <select class="select" id="situation" name="situation" required>
+            <option value="" disabled selected>Choose a focus area</option>
+            <option value="stress">Stress &amp; Burnout</option>
+            <option value="weight">Weight Management</option>
+            <option value="energy">Low Energy</option>
+            <option value="clarity">Mental Clarity</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="timeline"><span class="field-num">04</span><span>How long are you giving yourself?</span></label>
+          <select class="select" id="timeline" name="timeline" required>
+            <option value="" disabled selected>Pick a timeline</option>
+            <option value="1m">1 month</option>
+            <option value="3m">3 months</option>
+            <option value="6m">6 months</option>
+            <option value="1y">1 year</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="challenge"><span class="field-num">05</span><span>Your biggest challenge — in one breath</span></label>
+          <textarea class="textarea" id="challenge" name="challenge" maxlength="50" required placeholder="Say it plainly..."></textarea>
+          <span class="field-counter" id="counter" aria-live="polite">50 characters left</span>
+        </div>
+
+        <label class="commit" for="commit">
+          <input type="checkbox" id="commit" name="commit" required />
+          <span class="commit-text">
+            <strong>I commit to the program <span class="price">($199)</span>.</strong>
+            I understand this is a non-refundable commitment to my own twelve weeks of work.
+          </span>
+        </label>
+
+        <button class="submit" type="submit" id="submit" disabled>
+          <span>Send my application</span>
+          <svg class="submit-arrow" width="22" height="12" viewBox="0 0 22 12" fill="none" aria-hidden="true">
+            <path d="M1 6H20M20 6L15 1M20 6L15 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </form>
+
+      <div class="success" id="success" role="status" aria-live="polite">
+        <svg class="success-mark" viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="ring-inner" cx="50" cy="50" r="42" />
+          <circle class="ring" cx="50" cy="50" r="47" />
+          <path class="check" d="M30 52 L44 66 L72 38" />
+        </svg>
+        <h2 class="success-headline">Application <em>received</em>.</h2>
+        <p class="success-body">Thank you for trusting us with this. Our coaching team reads every application personally — expect to hear back within two business days.</p>
+        <div class="success-meta">
+          <span>Confirmation</span>
+          <span class="sep"></span>
+          <span id="successId">VW-0000</span>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  (() => {
+    const form      = document.getElementById('appForm');
+    const nameEl    = document.getElementById('name');
+    const emailEl   = document.getElementById('email');
+    const situation = document.getElementById('situation');
+    const timeline  = document.getElementById('timeline');
+    const challenge = document.getElementById('challenge');
+    const commit    = document.getElementById('commit');
+    const submit    = document.getElementById('submit');
+    const counter   = document.getElementById('counter');
+    const successEl = document.getElementById('success');
+    const successId = document.getElementById('successId');
+    const MAX = 50;
+
+    function validate() {
+      const ok =
+        nameEl.value.trim().length > 0 &&
+        emailEl.value.trim().length > 0 &&
+        situation.value !== '' &&
+        timeline.value !== '' &&
+        challenge.value.trim().length > 0 &&
+        commit.checked;
+      submit.disabled = !ok;
+    }
+
+    function updateCounter() {
+      const len = challenge.value.length;
+      const left = MAX - len;
+      counter.textContent = left + ' character' + (left === 1 ? '' : 's') + ' left';
+      counter.classList.toggle('warning', left <= 15 && left > 5);
+      counter.classList.toggle('danger', left <= 5);
+    }
+
+    document.querySelectorAll('select').forEach(sel => {
+      sel.addEventListener('change', () => {
+        sel.classList.toggle('has-value', !!sel.value);
+      });
+    });
+
+    [nameEl, emailEl, situation, timeline, challenge].forEach(el => {
+      el.addEventListener('input', validate);
+      el.addEventListener('change', validate);
+    });
+    commit.addEventListener('change', validate);
+    challenge.addEventListener('input', updateCounter);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (submit.disabled) return;
+
+      const id = 'VW-' + String(Math.floor(1000 + Math.random() * 9000));
+      successId.textContent = id;
+
+      form.classList.add('fade-out');
+      setTimeout(() => {
+        form.style.display = 'none';
+        successEl.classList.add('show');
+      }, 460);
+    });
+
+    validate();
+    updateCounter();
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>YouTube Analyst — Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:     { DEFAULT: '#f2f2f2', dim: '#9a9a9c', faint: '#626266' },
+          canvas:  { DEFAULT: '#0a0a0b', panel: '#141415', elevated: '#1a1a1c' },
+          line:    { DEFAULT: '#1f1f22', strong: '#2b2b2f' },
+          brand:   { DEFAULT: '#ff0033', soft: '#ff3355', faint: '#ffafc1' },
+          ok:      '#6ee7a0',
+          warn:    '#f0b548',
+        },
+        fontFamily: {
+          serif: ['"Instrument Serif"', 'Georgia', 'serif'],
+          sans:  ['Inter', '-apple-system', 'sans-serif'],
+          mono:  ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+        letterSpacing: {
+          tightish: '-0.015em',
+          tighter2: '-0.03em',
+          wide2:    '0.18em',
+        },
+      },
+    },
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body {
+    background:
+      radial-gradient(1400px 800px at 85% -10%, rgba(255,0,51,0.10), transparent 55%),
+      radial-gradient(1000px 500px at 10% 110%, rgba(255,51,85,0.06), transparent 60%),
+      #0a0a0b;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.35;
+    mix-blend-mode: overlay;
+    z-index: 1;
+  }
+  main, nav, footer { position: relative; z-index: 2; }
+
+  /* Dashed pipeline connector */
+  .pipe-connector {
+    height: 1px;
+    background-image: linear-gradient(to right, #2b2b2f 50%, transparent 50%);
+    background-size: 10px 1px;
+    background-repeat: repeat-x;
+    background-position: 0 0;
+  }
+  .pipe-connector.active {
+    background-image: linear-gradient(to right, #ff3355 50%, transparent 50%);
+    animation: dash-shift 0.7s linear infinite;
+  }
+  .pipe-connector.done {
+    background-image: none;
+    background-color: #ff3355;
+  }
+  @keyframes dash-shift {
+    to { background-position: 20px 0; }
+  }
+
+  /* Running pulse ring around stage indicator */
+  @keyframes pulse-ring {
+    0%   { transform: scale(0.9); opacity: 0.85; }
+    80%  { transform: scale(1.9); opacity: 0; }
+    100% { transform: scale(1.9); opacity: 0; }
+  }
+  .pulse-ring {
+    animation: pulse-ring 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Log scrollbar */
+  .log-shell { scrollbar-width: thin; scrollbar-color: #2b2b2f #0a0a0b; }
+  .log-shell::-webkit-scrollbar { width: 8px; height: 8px; }
+  .log-shell::-webkit-scrollbar-thumb { background: #2b2b2f; border-radius: 4px; }
+  .log-shell::-webkit-scrollbar-track { background: transparent; }
+
+  /* Hide number input spinners — we don't use them but consistent */
+  input::selection { background: rgba(255,51,85,0.35); }
+
+  /* Serif italic letter-spacing fix */
+  .serif-em em { font-style: italic; letter-spacing: -0.02em; }
+</style>
+</head>
+<body class="font-sans text-ink">
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="sticky top-0 z-20 border-b border-line bg-canvas/75 backdrop-blur-md">
+  <div class="max-w-[1120px] mx-auto px-7 py-5 flex items-center justify-between">
+    <a href="/" class="inline-flex items-center gap-3 font-extrabold tracking-wide2 text-[13px]">
+      <span class="relative inline-block w-[26px] h-[18px] rounded-[4px] bg-gradient-to-br from-brand to-brand-soft">
+        <span class="absolute inset-0 m-auto w-0 h-0 border-l-[7px] border-l-white border-y-[4px] border-y-transparent" style="left:10px;right:0"></span>
+      </span>
+      YOUTUBE ANALYST
+    </a>
+    <div class="hidden sm:flex items-center gap-7 text-[13px]">
+      <a href="#run" class="text-ink-dim hover:text-ink transition-colors">Run</a>
+      <a href="#pipeline" class="text-ink-dim hover:text-ink transition-colors">Pipeline</a>
+      <a href="#logs" class="text-ink-dim hover:text-ink transition-colors">Logs</a>
+      <a href="#docs" class="text-ink-dim hover:text-ink transition-colors">Docs</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-[1120px] mx-auto px-7">
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="pt-20 pb-14">
+    <div class="font-mono text-[11px] uppercase tracking-wide2 text-ink-faint mb-5">
+      Weekly report · live dashboard
+    </div>
+    <h1 class="serif-em font-serif text-[64px] sm:text-[80px] leading-[0.95] tracking-tighter2 max-w-[16ch]">
+      Run the <em class="text-brand-soft">weekly report,</em> watch it build.
+    </h1>
+    <p class="mt-7 text-ink-dim max-w-[56ch] text-[15px] leading-[1.7]">
+      Paste a channel, hit run, and the full pipeline — <span class="text-ink">fetch</span>,
+      <span class="text-ink">write</span>, <span class="text-ink">build</span>,
+      <span class="text-ink">send</span> — streams back here in real time. Same script as
+      the cron job, same outputs, just observable.
+    </p>
+  </section>
+
+  <!-- ═══════════ RUN CONTROL ═══════════ -->
+  <section id="run" class="pb-10 scroll-mt-24">
+    <div class="rounded-2xl border border-line bg-canvas-panel/85 backdrop-blur-sm overflow-hidden shadow-[0_30px_80px_-40px_rgba(255,0,51,0.35)]">
+      <!-- header -->
+      <div class="px-6 py-3.5 border-b border-line flex items-center gap-3 bg-canvas/40">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand-soft shadow-[0_0_10px_rgba(255,51,85,0.7)]"></span>
+        <span class="font-mono text-[10.5px] uppercase tracking-wide2 text-ink-dim">run/control</span>
+        <span class="ml-auto font-mono text-[10.5px] text-ink-faint">POST /run</span>
+      </div>
+
+      <!-- inputs -->
+      <div class="p-6 grid md:grid-cols-2 gap-5">
+        <label class="block">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[12px] font-semibold tracking-wide text-ink">Channel</span>
+            <span class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">required</span>
+          </div>
+          <input id="channel-input" type="text" autocomplete="off" spellcheck="false"
+            placeholder="@handle, channel URL, video URL, or UCxxxxxxxx…"
+            class="w-full bg-canvas border border-line-strong rounded-lg px-4 py-3 font-mono text-[13px] text-ink placeholder:text-ink-faint/70 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/25 hover:border-line-strong/80 transition-colors"/>
+          <div id="channel-helper" class="mt-1.5 text-[11.5px] text-ink-faint leading-relaxed">
+            Accepts <span class="font-mono text-ink-dim">UC…</span> IDs, <span class="font-mono">/channel/</span> URLs, <span class="font-mono">@handles</span>, and video URLs. Resolved on the fly.
+          </div>
+        </label>
+
+        <label class="block">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[12px] font-semibold tracking-wide text-ink">Keywords</span>
+            <span class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">optional</span>
+          </div>
+          <input id="keywords-input" type="text" autocomplete="off" spellcheck="false"
+            placeholder="react, testing, automation"
+            class="w-full bg-canvas border border-line-strong rounded-lg px-4 py-3 font-mono text-[13px] text-ink placeholder:text-ink-faint/70 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/25 hover:border-line-strong/80 transition-colors"/>
+          <div class="mt-1.5 text-[11.5px] text-ink-faint leading-relaxed">
+            Captured and passed through as <span class="font-mono text-ink-dim">REPORT_KEYWORDS</span>. Not filtered in this build.
+          </div>
+        </label>
+      </div>
+
+      <!-- footer: status + button -->
+      <div class="px-6 pb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-center gap-2.5 min-h-[20px]">
+          <span id="run-dot" class="w-2 h-2 rounded-full bg-ink-faint transition-colors"></span>
+          <div id="run-status" class="font-mono text-[11.5px] text-ink-dim">idle — waiting for channel</div>
+        </div>
+        <button id="run-btn" type="button" disabled
+          class="group inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-soft active:translate-y-px disabled:bg-line-strong disabled:text-ink-faint disabled:cursor-not-allowed disabled:hover:bg-line-strong text-white font-semibold text-[13px] px-5 py-3 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas-panel">
+          <span id="run-btn-label">Run report</span>
+          <svg id="run-btn-icon" class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- error slot -->
+      <div id="run-error" class="hidden px-6 pb-6 -mt-2">
+        <div id="run-error-body" class="border border-brand/40 bg-brand/10 text-brand-faint text-[12px] font-mono leading-relaxed rounded-lg px-4 py-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ PIPELINE STATUS ═══════════ -->
+  <section id="pipeline" class="pb-10 scroll-mt-24">
+    <div class="flex items-baseline justify-between mb-4">
+      <div class="font-mono text-[11px] uppercase tracking-wide2 text-ink-faint">Live pipeline</div>
+      <div id="pipeline-timer" class="font-mono text-[11px] text-ink-faint tabular-nums">—</div>
+    </div>
+
+    <div class="rounded-2xl border border-line bg-canvas-panel/85 backdrop-blur-sm p-7 md:p-10">
+      <!-- Desktop horizontal layout -->
+      <div class="hidden md:grid items-center" style="grid-template-columns:auto 1fr auto 1fr auto 1fr auto">
+        <!-- Stage 1: Fetch -->
+        <div class="flex flex-col items-center gap-3 w-32">
+          <div data-stage-indicator="fetch" class="relative flex items-center justify-center w-11 h-11 rounded-full border border-line-strong bg-canvas-elevated transition-all">
+            <!-- indicator dot/icon rendered by JS -->
+          </div>
+          <div class="text-center">
+            <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">01</div>
+            <div class="font-semibold text-[13px] text-ink mt-0.5">Fetch</div>
+            <div data-stage-label="fetch" class="font-mono text-[10.5px] text-ink-faint mt-0.5">pending</div>
+          </div>
+        </div>
+        <!-- Connector 1→2 -->
+        <div data-connector="fetch-write" class="pipe-connector mx-3"></div>
+        <!-- Stage 2: Write -->
+        <div class="flex flex-col items-center gap-3 w-32">
+          <div data-stage-indicator="write" class="relative flex items-center justify-center w-11 h-11 rounded-full border border-line-strong bg-canvas-elevated transition-all"></div>
+          <div class="text-center">
+            <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">02</div>
+            <div class="font-semibold text-[13px] text-ink mt-0.5">Write</div>
+            <div data-stage-label="write" class="font-mono text-[10.5px] text-ink-faint mt-0.5">pending</div>
+          </div>
+        </div>
+        <!-- Connector 2→3 -->
+        <div data-connector="write-build" class="pipe-connector mx-3"></div>
+        <!-- Stage 3: Build -->
+        <div class="flex flex-col items-center gap-3 w-32">
+          <div data-stage-indicator="build" class="relative flex items-center justify-center w-11 h-11 rounded-full border border-line-strong bg-canvas-elevated transition-all"></div>
+          <div class="text-center">
+            <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">03</div>
+            <div class="font-semibold text-[13px] text-ink mt-0.5">Build</div>
+            <div data-stage-label="build" class="font-mono text-[10.5px] text-ink-faint mt-0.5">pending</div>
+          </div>
+        </div>
+        <!-- Connector 3→4 -->
+        <div data-connector="build-send" class="pipe-connector mx-3"></div>
+        <!-- Stage 4: Send -->
+        <div class="flex flex-col items-center gap-3 w-32">
+          <div data-stage-indicator="send" class="relative flex items-center justify-center w-11 h-11 rounded-full border border-line-strong bg-canvas-elevated transition-all"></div>
+          <div class="text-center">
+            <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">04</div>
+            <div class="font-semibold text-[13px] text-ink mt-0.5">Send</div>
+            <div data-stage-label="send" class="font-mono text-[10.5px] text-ink-faint mt-0.5">pending</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile vertical layout -->
+      <div class="md:hidden flex flex-col gap-4">
+        <!-- Mobile stage cards generated by JS from the same data-stage-indicator elements; simpler to duplicate statically -->
+        <div class="flex items-center gap-4 p-3 rounded-lg border border-line bg-canvas">
+          <div data-stage-indicator-m="fetch" class="relative flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-canvas-elevated transition-all shrink-0"></div>
+          <div class="flex-1">
+            <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">01 · Fetch</div>
+            <div data-stage-label-m="fetch" class="font-mono text-[11px] text-ink-faint mt-0.5">pending</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 p-3 rounded-lg border border-line bg-canvas">
+          <div data-stage-indicator-m="write" class="relative flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-canvas-elevated transition-all shrink-0"></div>
+          <div class="flex-1">
+            <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">02 · Write</div>
+            <div data-stage-label-m="write" class="font-mono text-[11px] text-ink-faint mt-0.5">pending</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 p-3 rounded-lg border border-line bg-canvas">
+          <div data-stage-indicator-m="build" class="relative flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-canvas-elevated transition-all shrink-0"></div>
+          <div class="flex-1">
+            <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">03 · Build</div>
+            <div data-stage-label-m="build" class="font-mono text-[11px] text-ink-faint mt-0.5">pending</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 p-3 rounded-lg border border-line bg-canvas">
+          <div data-stage-indicator-m="send" class="relative flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-canvas-elevated transition-all shrink-0"></div>
+          <div class="flex-1">
+            <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">04 · Send</div>
+            <div data-stage-label-m="send" class="font-mono text-[11px] text-ink-faint mt-0.5">pending</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ LOG TAIL ═══════════ -->
+  <section id="logs" class="pb-16 scroll-mt-24">
+    <div class="flex items-baseline justify-between mb-4">
+      <div class="font-mono text-[11px] uppercase tracking-wide2 text-ink-faint">Process output</div>
+      <button id="log-clear" type="button" class="font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint hover:text-ink-dim transition-colors">clear</button>
+    </div>
+    <div class="rounded-2xl border border-line bg-canvas-panel/85 backdrop-blur-sm overflow-hidden">
+      <div class="px-4 py-2.5 border-b border-line bg-canvas/40 flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
+        <span class="ml-3 font-mono text-[10.5px] text-ink-faint">weekly-report.log</span>
+      </div>
+      <div id="log-shell" class="log-shell h-[280px] overflow-auto px-5 py-4 font-mono text-[12px] leading-[1.7] text-ink-dim">
+        <div id="log-empty" class="text-ink-faint">Awaiting first run. Output appears here line-by-line.</div>
+        <div id="log-lines"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ DOCS (compact) ═══════════ -->
+  <section id="docs" class="pb-16 scroll-mt-24">
+    <div class="font-mono text-[11px] uppercase tracking-wide2 text-ink-faint mb-4">Under the hood</div>
+    <div class="grid md:grid-cols-4 gap-3">
+      <div class="rounded-xl border border-line bg-canvas-panel/70 p-5">
+        <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">01 · Fetch</div>
+        <div class="font-semibold text-[14px] mt-1">youtube_client.py</div>
+        <p class="mt-2 text-[12.5px] text-ink-dim leading-relaxed">Pulls last-week videos, views, likes, subscriber counts from YouTube Data API v3.</p>
+      </div>
+      <div class="rounded-xl border border-line bg-canvas-panel/70 p-5">
+        <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">02 · Write</div>
+        <div class="font-semibold text-[14px] mt-1">sheets_writer.py</div>
+        <p class="mt-2 text-[12.5px] text-ink-dim leading-relaxed">Appends a dated tab to the Google Sheet with per-video metrics and channel totals.</p>
+      </div>
+      <div class="rounded-xl border border-line bg-canvas-panel/70 p-5">
+        <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">03 · Build</div>
+        <div class="font-semibold text-[14px] mt-1">slides_builder.py</div>
+        <p class="mt-2 text-[12.5px] text-ink-dim leading-relaxed">Creates a 3-slide Google Slides deck — cover, metrics, top video of the week.</p>
+      </div>
+      <div class="rounded-xl border border-line bg-canvas-panel/70 p-5">
+        <div class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">04 · Send</div>
+        <div class="font-semibold text-[14px] mt-1">gmail_sender.py</div>
+        <p class="mt-2 text-[12.5px] text-ink-dim leading-relaxed">Emails the summary via Gmail with links to the Sheet and Slides deck.</p>
+      </div>
+    </div>
+    <div class="mt-5 rounded-xl border border-line bg-canvas/40 px-5 py-4 text-[12.5px] text-ink-dim leading-relaxed">
+      First run opens a browser for Google OAuth consent. Subsequent runs stay silent — token cached in
+      <span class="font-mono text-ink">token.json</span>. See <span class="font-mono text-ink">README.md</span> for Google Cloud setup.
+    </div>
+  </section>
+
+  <!-- ═══════════ VIDEO ANALYZER ═══════════ -->
+  <section id="analyze" class="pb-16 scroll-mt-24">
+    <div class="rounded-2xl border border-line bg-canvas-panel/85 backdrop-blur-sm overflow-hidden shadow-[0_30px_80px_-40px_rgba(255,0,51,0.35)]">
+      <div class="px-6 py-3.5 border-b border-line flex items-center gap-3 bg-canvas/40">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand-soft shadow-[0_0_10px_rgba(255,51,85,0.7)]"></span>
+        <span class="font-mono text-[10.5px] uppercase tracking-wide2 text-ink-dim">video/analyze</span>
+        <span class="ml-auto font-mono text-[10.5px] text-ink-faint">POST /api/analyze-video</span>
+      </div>
+
+      <div class="p-6">
+        <label class="block">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[12px] font-semibold tracking-wide text-ink">YouTube video URL</span>
+            <span class="font-mono text-[10px] uppercase tracking-wide2 text-ink-faint">required</span>
+          </div>
+          <input id="video-url" type="text" autocomplete="off" spellcheck="false"
+            placeholder="https://www.youtube.com/watch?v=…  or  https://youtu.be/…  or  https://youtube.com/shorts/…"
+            class="w-full bg-canvas border border-line-strong rounded-lg px-4 py-3 font-mono text-[13px] text-ink placeholder:text-ink-faint/70 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/25 hover:border-line-strong/80 transition-colors"/>
+          <div class="mt-1.5 text-[11.5px] text-ink-faint leading-relaxed">
+            Pulls the video's caption track, asks Groq to produce a short summary, 3–5 timestamped key moments, and 3–5 quotable highlights. Captions must be available on the video.
+          </div>
+        </label>
+
+        <div class="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex items-center gap-2.5 min-h-[20px]">
+            <span id="analyze-dot" class="w-2 h-2 rounded-full bg-ink-faint transition-colors"></span>
+            <div id="analyze-status" class="font-mono text-[11.5px] text-ink-dim">idle — paste a video URL</div>
+          </div>
+          <button id="analyze-btn" type="button" disabled
+            class="group inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-soft active:translate-y-px disabled:bg-line-strong disabled:text-ink-faint disabled:cursor-not-allowed disabled:hover:bg-line-strong text-white font-semibold text-[13px] px-5 py-3 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas-panel">
+            <span id="analyze-btn-label">Analyze</span>
+            <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="analyze-error" class="hidden px-6 pb-6 -mt-2">
+        <div id="analyze-error-body" class="border border-brand/40 bg-brand/10 text-brand-faint text-[12px] font-mono leading-relaxed rounded-lg px-4 py-3"></div>
+      </div>
+
+      <div id="analyze-results" class="hidden border-t border-line">
+        <div class="p-6 space-y-6">
+          <div>
+            <div class="font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint mb-1.5">Summary</div>
+            <p id="analyze-summary" class="text-[14px] text-ink leading-relaxed"></p>
+          </div>
+          <div>
+            <div class="font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint mb-1.5">Key moments</div>
+            <ul id="analyze-moments" class="space-y-1.5"></ul>
+          </div>
+          <div>
+            <div class="font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint mb-1.5">Highlights</div>
+            <ul id="analyze-highlights" class="space-y-1.5 list-disc list-inside marker:text-brand"></ul>
+          </div>
+          <div class="pt-3 border-t border-line text-[11.5px] text-ink-faint flex flex-wrap gap-x-4 gap-y-1">
+            <span>video: <a id="analyze-video-link" href="#" target="_blank" rel="noopener" class="font-mono text-ink-dim hover:text-brand underline-offset-2 hover:underline"></a></span>
+            <span>length: <span id="analyze-minutes" class="font-mono text-ink-dim">—</span></span>
+            <span id="analyze-truncated" class="hidden text-amber-300/90">⚠ partial — long video truncated to fit free-tier rate limit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="border-t border-line">
+  <div class="max-w-[1120px] mx-auto px-7 py-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[12px] text-ink-faint">
+    <div>© 2026 YouTube Analyst — a small local tool</div>
+    <div class="flex items-center gap-4">
+      <a href="https://developers.google.com/youtube/v3" target="_blank" rel="noopener" class="hover:text-ink-dim transition-colors">YouTube Data API ↗</a>
+      <a href="https://developers.google.com/slides" target="_blank" rel="noopener" class="hover:text-ink-dim transition-colors">Slides API ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const STAGES = ['fetch', 'write', 'build', 'send'];
+  const CONNECTORS = [['fetch','write'], ['write','build'], ['build','send']];
+
+  const els = {
+    channel: document.getElementById('channel-input'),
+    channelHelper: document.getElementById('channel-helper'),
+    keywords: document.getElementById('keywords-input'),
+    btn: document.getElementById('run-btn'),
+    btnLabel: document.getElementById('run-btn-label'),
+    btnIcon: document.getElementById('run-btn-icon'),
+    status: document.getElementById('run-status'),
+    statusDot: document.getElementById('run-dot'),
+    error: document.getElementById('run-error'),
+    errorBody: document.getElementById('run-error-body'),
+    logShell: document.getElementById('log-shell'),
+    logLines: document.getElementById('log-lines'),
+    logEmpty: document.getElementById('log-empty'),
+    logClear: document.getElementById('log-clear'),
+    timer: document.getElementById('pipeline-timer'),
+  };
+
+  const resolveState = { resolvedFor: '', channelId: '', title: '', source: '', error: '' };
+
+  // ── State ───────────────────────────────
+  const state = {
+    running: false,
+    stages: Object.fromEntries(STAGES.map(s => [s, 'pending'])),
+    startTs: 0,
+    timerHandle: 0,
+  };
+
+  // ── Rendering ───────────────────────────
+  const ICONS = {
+    check: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    x:     '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    dash:  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  };
+
+  function renderStage(stage) {
+    const status = state.stages[stage];
+    const desktop = document.querySelector(`[data-stage-indicator="${stage}"]`);
+    const mobile  = document.querySelector(`[data-stage-indicator-m="${stage}"]`);
+    const labelD  = document.querySelector(`[data-stage-label="${stage}"]`);
+    const labelM  = document.querySelector(`[data-stage-label-m="${stage}"]`);
+
+    // Base classes for indicator — reset then apply by status
+    const baseD = 'relative flex items-center justify-center w-11 h-11 rounded-full transition-all';
+    const baseM = 'relative flex items-center justify-center w-9 h-9 rounded-full transition-all shrink-0';
+
+    let cls = ' border border-line-strong bg-canvas-elevated text-ink-faint';
+    let inner = '';
+    let labelText = status;
+    let labelCls = 'font-mono text-[10.5px] mt-0.5 ';
+
+    if (status === 'pending') {
+      cls = ' border border-line-strong bg-canvas-elevated text-ink-faint';
+      labelCls += 'text-ink-faint';
+    } else if (status === 'running') {
+      cls = ' border border-brand bg-brand/10 text-brand-soft';
+      inner = `
+        <span class="absolute inset-0 rounded-full bg-brand/40 pulse-ring"></span>
+        <span class="relative w-2.5 h-2.5 rounded-full bg-brand-soft shadow-[0_0_12px_rgba(255,51,85,0.8)]"></span>
+      `;
+      labelCls += 'text-brand-soft';
+    } else if (status === 'done') {
+      cls = ' border border-brand bg-brand text-white';
+      inner = `<span class="relative">${ICONS.check}</span>`;
+      labelCls += 'text-ink';
+    } else if (status === 'failed') {
+      cls = ' border border-brand bg-canvas-elevated text-brand';
+      inner = `<span class="relative">${ICONS.x}</span>`;
+      labelCls += 'text-brand';
+    } else if (status === 'skipped') {
+      cls = ' border border-dashed border-line-strong bg-canvas-elevated text-ink-faint';
+      inner = `<span class="relative">${ICONS.dash}</span>`;
+      labelCls += 'text-ink-faint';
+    }
+
+    if (desktop) {
+      desktop.className = baseD + cls;
+      desktop.innerHTML = inner;
+    }
+    if (mobile) {
+      mobile.className = baseM + cls;
+      mobile.innerHTML = inner;
+    }
+    if (labelD) { labelD.className = labelCls.replace('text-[11px]', 'text-[10.5px]'); labelD.textContent = labelText; }
+    if (labelM) { labelM.className = labelCls + ' !text-[11px]'; labelM.textContent = labelText; }
+  }
+
+  function renderConnectors() {
+    CONNECTORS.forEach(([a, b]) => {
+      const el = document.querySelector(`[data-connector="${a}-${b}"]`);
+      if (!el) return;
+      el.classList.remove('active', 'done');
+      const sa = state.stages[a];
+      const sb = state.stages[b];
+      if ((sa === 'done' || sa === 'skipped') && sb === 'running') {
+        el.classList.add('active');
+      } else if ((sa === 'done' || sa === 'skipped') && (sb === 'done' || sb === 'skipped' || sb === 'failed')) {
+        el.classList.add('done');
+      }
+    });
+  }
+
+  function setStage(stage, status) {
+    if (!STAGES.includes(stage)) return;
+    state.stages[stage] = status;
+    renderStage(stage);
+    renderConnectors();
+  }
+
+  function resetPipeline() {
+    STAGES.forEach(s => state.stages[s] = 'pending');
+    STAGES.forEach(renderStage);
+    renderConnectors();
+  }
+
+  // ── Log ─────────────────────────────────
+  function logLine(line) {
+    if (els.logEmpty) { els.logEmpty.remove(); els.logEmpty = null; }
+    const row = document.createElement('div');
+    row.className = 'whitespace-pre-wrap break-words';
+    const isErr = /^\[stderr\]|^\[serve\] (spawn failed|child error)|\[weekly-report\] ✗/.test(line);
+    const isOk  = /^\[weekly-report\] ✓/.test(line);
+    if (isErr) row.classList.add('text-brand-soft');
+    else if (isOk) row.classList.add('text-ink');
+    else row.classList.add('text-ink-dim');
+    row.textContent = line;
+    els.logLines.appendChild(row);
+    // Auto-scroll to bottom if user is near bottom
+    const shell = els.logShell;
+    const nearBottom = shell.scrollHeight - shell.scrollTop - shell.clientHeight < 40;
+    if (nearBottom) shell.scrollTop = shell.scrollHeight;
+  }
+
+  function clearLog() {
+    els.logLines.innerHTML = '';
+    const empty = document.createElement('div');
+    empty.id = 'log-empty';
+    empty.className = 'text-ink-faint';
+    empty.textContent = 'Awaiting first run. Output appears here line-by-line.';
+    els.logShell.insertBefore(empty, els.logLines);
+    els.logEmpty = empty;
+  }
+
+  els.logClear.addEventListener('click', clearLog);
+
+  // ── Status UI ───────────────────────────
+  function setStatus(text, kind = 'idle') {
+    els.status.textContent = text;
+    const dot = els.statusDot;
+    dot.className = 'w-2 h-2 rounded-full transition-colors';
+    if (kind === 'idle')     dot.classList.add('bg-ink-faint');
+    if (kind === 'running')  dot.classList.add('bg-brand-soft', 'shadow-[0_0_10px_rgba(255,51,85,0.7)]', 'animate-pulse');
+    if (kind === 'done')     dot.classList.add('bg-ok');
+    if (kind === 'failed')   dot.classList.add('bg-brand');
+  }
+
+  function showError(msg) {
+    els.errorBody.textContent = msg;
+    els.error.classList.remove('hidden');
+  }
+  function hideError() {
+    els.error.classList.add('hidden');
+    els.errorBody.textContent = '';
+  }
+
+  function setButton(mode) {
+    if (mode === 'idle') {
+      els.btn.disabled = !els.channel.value.trim();
+      els.btnLabel.textContent = 'Run report';
+      els.btnIcon.style.display = '';
+    } else if (mode === 'running') {
+      els.btn.disabled = true;
+      els.btnLabel.textContent = 'Running…';
+      els.btnIcon.style.display = 'none';
+    } else if (mode === 'done') {
+      els.btn.disabled = !els.channel.value.trim();
+      els.btnLabel.textContent = 'Run again';
+      els.btnIcon.style.display = '';
+    }
+  }
+
+  // ── Timer ───────────────────────────────
+  function startTimer() {
+    state.startTs = Date.now();
+    const tick = () => {
+      const ms = Date.now() - state.startTs;
+      const s = Math.floor(ms / 1000);
+      const mm = String(Math.floor(s / 60)).padStart(2, '0');
+      const ss = String(s % 60).padStart(2, '0');
+      els.timer.textContent = `${mm}:${ss}`;
+    };
+    tick();
+    state.timerHandle = setInterval(tick, 500);
+  }
+  function stopTimer() {
+    if (state.timerHandle) clearInterval(state.timerHandle);
+    state.timerHandle = 0;
+  }
+
+  // ── Input validation ────────────────────
+  // Sync regex check — true if input is instantly resolvable client-side
+  // (no API call needed). For everything else we ask /api/resolve-channel.
+  function syncMatch(v) {
+    const s = (v || '').trim();
+    if (!s) return null;
+    if (/^UC[A-Za-z0-9_-]{22}$/.test(s)) return { channelId: s, source: 'id' };
+    const m = s.match(/\/channel\/(UC[A-Za-z0-9_-]{22})/);
+    if (m) return { channelId: m[1], source: 'channel-url' };
+    return null;
+  }
+  // Looks plausibly like something we can resolve via API
+  function plausibleForApi(v) {
+    const s = (v || '').trim();
+    if (!s) return false;
+    if (/^@[A-Za-z0-9._-]{1,30}$/.test(s)) return true;
+    if (/youtube\.com\/@[A-Za-z0-9._-]/i.test(s)) return true;
+    if (/[?&]v=[A-Za-z0-9_-]{11}/.test(s)) return true;
+    if (/youtu\.be\/[A-Za-z0-9_-]{11}/i.test(s)) return true;
+    if (/\/shorts\/[A-Za-z0-9_-]{11}/i.test(s)) return true;
+    return false;
+  }
+
+  function setHelper(text, kind = 'faint') {
+    els.channelHelper.className = 'mt-1.5 text-[11.5px] leading-relaxed ' +
+      (kind === 'ok'    ? 'text-ok'
+      : kind === 'fail' ? 'text-brand-soft'
+      : kind === 'busy' ? 'text-ink-dim'
+      :                   'text-ink-faint');
+    els.channelHelper.innerHTML = text;
+  }
+
+  let resolveTimer = 0;
+  let resolveSeq = 0;
+
+  async function resolveRemote(input) {
+    const seq = ++resolveSeq;
+    setHelper('Resolving via YouTube API…', 'busy');
+    let r;
+    try {
+      r = await fetch(`/api/resolve-channel?input=${encodeURIComponent(input)}`);
+    } catch (err) {
+      if (seq !== resolveSeq) return;
+      setHelper(`Network error: ${err.message}`, 'fail');
+      resolveState.error = err.message;
+      resolveState.channelId = '';
+      els.btn.disabled = true;
+      return;
+    }
+    if (seq !== resolveSeq) return;
+    let data;
+    try { data = await r.json(); } catch { data = { ok: false, error: 'Bad server response' }; }
+    if (data.ok) {
+      Object.assign(resolveState, {
+        resolvedFor: input,
+        channelId: data.channelId,
+        title: data.channelTitle || '',
+        source: data.source,
+        error: '',
+      });
+      const sourceLabel = ({
+        id: 'raw ID',
+        'channel-url': 'channel URL',
+        handle: data.handle || '@handle',
+        video: `video ${data.videoId}`,
+      })[data.source] || data.source;
+      setHelper(
+        `Resolved <span class="font-mono text-ink">${data.channelId}</span>` +
+        (data.channelTitle ? ` — <span class="text-ink">${escapeHtml(data.channelTitle)}</span>` : '') +
+        ` <span class="text-ink-faint">(via ${sourceLabel})</span>`,
+        'ok'
+      );
+      els.btn.disabled = state.running;
+      setStatus('ready — click Run report', 'idle');
+    } else {
+      Object.assign(resolveState, { resolvedFor: input, channelId: '', title: '', source: '', error: data.error });
+      setHelper(escapeHtml(data.error || 'Could not resolve.'), 'fail');
+      els.btn.disabled = true;
+      setStatus('channel could not be resolved', 'idle');
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  els.channel.addEventListener('input', () => {
+    hideError();
+    if (state.running) return;
+    const raw = els.channel.value;
+    const v = raw.trim();
+    clearTimeout(resolveTimer);
+
+    if (!v) {
+      Object.assign(resolveState, { resolvedFor: '', channelId: '', title: '', source: '', error: '' });
+      setHelper('Accepts <span class="font-mono text-ink-dim">UC…</span> IDs, <span class="font-mono">/channel/</span> URLs, <span class="font-mono">@handles</span>, and video URLs. Resolved on the fly.', 'faint');
+      els.btn.disabled = true;
+      setStatus('idle — waiting for channel', 'idle');
+      return;
+    }
+
+    const sync = syncMatch(v);
+    if (sync) {
+      Object.assign(resolveState, { resolvedFor: v, channelId: sync.channelId, title: '', source: sync.source, error: '' });
+      const label = sync.source === 'id' ? 'raw ID' : 'channel URL';
+      setHelper(`Resolved <span class="font-mono text-ink">${sync.channelId}</span> <span class="text-ink-faint">(via ${label})</span>`, 'ok');
+      els.btn.disabled = false;
+      setStatus('ready — click Run report', 'idle');
+      return;
+    }
+
+    if (plausibleForApi(v)) {
+      els.btn.disabled = true;
+      setStatus('resolving channel…', 'idle');
+      resolveTimer = setTimeout(() => resolveRemote(v), 350);
+      return;
+    }
+
+    Object.assign(resolveState, { resolvedFor: v, channelId: '', title: '', source: '', error: '' });
+    setHelper('Doesn\'t look like a UC… ID, channel URL, @handle, or video URL.', 'fail');
+    els.btn.disabled = true;
+    setStatus('channel doesn\'t look valid', 'idle');
+  });
+
+  // ── Run ─────────────────────────────────
+  async function runPipeline() {
+    hideError();
+    if (!els.channel.value.trim()) {
+      showError('Enter a channel URL, @handle, video URL, or UC… ID before running.');
+      return;
+    }
+
+    state.running = true;
+    setButton('running');
+    setStatus('connecting…', 'running');
+    resetPipeline();
+    startTimer();
+
+    let res;
+    try {
+      res = await fetch('/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: els.channel.value.trim(),
+          keywords: els.keywords.value.trim(),
+        }),
+      });
+    } catch (err) {
+      state.running = false;
+      stopTimer();
+      setButton('idle');
+      setStatus('network error', 'failed');
+      showError(`Could not reach /run — ${err.message}`);
+      return;
+    }
+
+    if (!res.ok) {
+      state.running = false;
+      stopTimer();
+      setButton('idle');
+      let msg = `Server returned ${res.status}`;
+      try {
+        const body = await res.json();
+        if (body && body.error) msg = body.error;
+      } catch { /* ignore */ }
+      setStatus('request rejected', 'failed');
+      showError(msg);
+      return;
+    }
+
+    setStatus('running — streaming from pipeline', 'running');
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let exitCode = null;
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buf.indexOf('\n')) !== -1) {
+          const raw = buf.slice(0, idx).trim();
+          buf = buf.slice(idx + 1);
+          if (!raw) continue;
+          let msg;
+          try { msg = JSON.parse(raw); } catch { continue; }
+          if (msg.type === 'log') {
+            logLine(msg.line);
+          } else if (msg.type === 'stage') {
+            setStage(msg.stage, msg.status);
+          } else if (msg.type === 'done') {
+            exitCode = msg.exitCode;
+          }
+        }
+      }
+    } catch (err) {
+      logLine(`[client] stream error: ${err.message}`);
+    }
+
+    state.running = false;
+    stopTimer();
+    setButton('done');
+
+    if (exitCode === 0) {
+      setStatus(`done — exit 0`, 'done');
+    } else if (exitCode === null) {
+      setStatus('connection closed before completion', 'failed');
+    } else {
+      setStatus(`failed — exit ${exitCode}`, 'failed');
+    }
+  }
+
+  els.btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!els.btn.disabled) runPipeline();
+  });
+
+  // Initial paint
+  STAGES.forEach(renderStage);
+  renderConnectors();
+  setStatus('idle — waiting for channel', 'idle');
+  setButton('idle');
+})();
+
+// ─────────────────────────────────────────────────────────────
+// Video analyzer wiring (independent of the channel-report flow)
+// ─────────────────────────────────────────────────────────────
+(() => {
+  const url       = document.getElementById('video-url');
+  const btn       = document.getElementById('analyze-btn');
+  const btnLabel  = document.getElementById('analyze-btn-label');
+  const dot       = document.getElementById('analyze-dot');
+  const status    = document.getElementById('analyze-status');
+  const errBox    = document.getElementById('analyze-error');
+  const errBody   = document.getElementById('analyze-error-body');
+  const results   = document.getElementById('analyze-results');
+  const summaryEl = document.getElementById('analyze-summary');
+  const momentsEl = document.getElementById('analyze-moments');
+  const highEl    = document.getElementById('analyze-highlights');
+  const linkEl    = document.getElementById('analyze-video-link');
+  const minsEl    = document.getElementById('analyze-minutes');
+
+  const VIDEO_URL_RE = /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/;
+
+  function isLikelyVideoUrl(s) {
+    return VIDEO_URL_RE.test(s) || /^[A-Za-z0-9_-]{11}$/.test(s.trim());
+  }
+
+  function setStatus(text, tone) {
+    status.textContent = text;
+    dot.className = 'w-2 h-2 rounded-full transition-colors ' + ({
+      idle:    'bg-ink-faint',
+      ready:   'bg-ink-dim',
+      running: 'bg-brand-soft animate-pulse shadow-[0_0_10px_rgba(255,51,85,0.7)]',
+      done:    'bg-emerald-400',
+      error:   'bg-brand',
+    }[tone] || 'bg-ink-faint');
+  }
+
+  function showError(msg) {
+    errBody.textContent = msg;
+    errBox.classList.remove('hidden');
+  }
+  function hideError() { errBox.classList.add('hidden'); }
+
+  url.addEventListener('input', () => {
+    const v = url.value.trim();
+    btn.disabled = !isLikelyVideoUrl(v);
+    setStatus(btn.disabled ? 'idle — paste a video URL' : 'ready', btn.disabled ? 'idle' : 'ready');
+    hideError();
+  });
+
+  btn.addEventListener('click', async () => {
+    const v = url.value.trim();
+    if (!isLikelyVideoUrl(v)) return;
+    hideError();
+    results.classList.add('hidden');
+    btn.disabled = true;
+    btnLabel.textContent = 'Analyzing…';
+    setStatus('fetching transcript + summarizing…', 'running');
+
+    try {
+      const r = await fetch('/api/analyze-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: v }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data?.error || `HTTP ${r.status}`);
+
+      summaryEl.textContent = data.summary || '(no summary returned)';
+      momentsEl.innerHTML = '';
+      (data.key_moments || []).forEach(m => {
+        const li = document.createElement('li');
+        li.className = 'flex gap-3 text-[13px] leading-relaxed';
+        const ts = document.createElement('span');
+        ts.className = 'font-mono text-brand-faint shrink-0 w-12';
+        ts.textContent = m.timestamp || '—';
+        const desc = document.createElement('span');
+        desc.className = 'text-ink';
+        desc.textContent = m.description || '';
+        li.append(ts, desc);
+        momentsEl.appendChild(li);
+      });
+      highEl.innerHTML = '';
+      (data.highlights || []).forEach(h => {
+        const li = document.createElement('li');
+        li.className = 'text-[13px] text-ink-dim';
+        li.textContent = h;
+        highEl.appendChild(li);
+      });
+      linkEl.textContent = data.video_url || data.video_id || '—';
+      linkEl.href = data.video_url || '#';
+      minsEl.textContent = data.transcript_minutes != null ? `${data.transcript_minutes} min` : '—';
+      document.getElementById('analyze-truncated').classList.toggle('hidden', !data.transcript_truncated);
+
+      results.classList.remove('hidden');
+      setStatus('done', 'done');
+    } catch (err) {
+      showError(err.message || String(err));
+      setStatus('error', 'error');
+    } finally {
+      btn.disabled = !isLikelyVideoUrl(url.value.trim());
+      btnLabel.textContent = 'Analyze';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

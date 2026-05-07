@@ -1,0 +1,67 @@
+[
+  {
+    "id": "2e01cb74-a976-4db6-a0db-588fd6b3c4b5",
+    "createdAt": "2026-04-27T01:21:38.021Z",
+    "inputs": {
+      "idea": "Marquee — Hollywood-glamour couture and fine jewelry",
+      "theme": "Old-Hollywood, art-deco, sunset gold, theatrical, red-carpet",
+      "products": "Silk slip gown, diamond chandelier earrings, gold cuff bracelet, satin tuxedo, velvet evening clutch"
+    },
+    "concepts": [
+      {
+        "category": "Minimalist",
+        "name": "Stillpoint",
+        "description": "Whitespace-forward editorial. Thin serif headline, restrained palette, single product anchor.",
+        "frontPrompt": "A WEBSITE HOMEPAGE UI MOCKUP — render as if it's a screenshot of a real designed website seen in a desktop browser. It MUST look like an actual web page, not a moodboard or photograph. Concept: \"Marquee — Hollywood-glamour couture and fine jewelry\". The page should be dramatically minimalist and sparse: off-white background, mostly empty whitespace, one oversized thin serif headline left-aligned in the upper-middle area, a tiny logotype in the top-left corner, a single small \"Shop\" link in the top-right corner, and far below a small centered product still life photograph above a hairline horizontal rule and a tiny \"View\" link. The page is at least 60 percent empty whitespace. Do NOT add a multi-link nav, a hero photograph, product cards, multiple sections, color blocks, or magazine-style layout. Featured product context: a piece of fine jewelry or evening wear. Theme: old-Hollywood glamour, restrained luxury. Crisp UI typography, 3:4 portrait, no watermarks, no readable text.",
+        "frontUrl": "https://tempfile.aiquickdraw.com/workers/nano/image_1777252952934_anejs5.png",
+        "frontStatus": "done",
+        "frontError": null
+      },
+      {
+        "category": "Minimalist",
+        "name": "Margin Note",
+        "description": "Asymmetric typographic essay. The brand voice on one side, a single product on the other.",
+        "frontPrompt": "A WEBSITE HOMEPAGE UI MOCKUP — render as if it's a screenshot of a real designed website seen in a desktop browser. It MUST look like an actual web page (realistic web layout proportions, real interface elements like nav, headlines, buttons) — NOT a moodboard, NOT a flat-lay, NOT a fashion photograph, NOT a magazine spread, NOT a color swatch sheet. Concept: \"Marquee — Hollywood-glamour couture and fine jewelry\". Design style (follow this carefully — it sets the density and feel): minimalist asymmetric web design that reads like a quiet printed page. Cream background, deep brown thin serif type, one rust accent. Severely restrained — the design power comes from generous empty margins, not from elements. SPARSE and QUIET.. Layout (follow this literally — render exactly the elements described, in the described proportions, do NOT add extra sections, hero photographs, product grids, or magazine-style blocks that are not explicitly described): a strict two-column homepage that fills the whole canvas. Left column (about 55 percent width): a thin serif logotype top-left, a two-line italic tagline mid-column, and three tiny footer-style links at the very bottom — the rest of the column is empty cream space. Right column (about 45 percent width): a single centered product still life photograph (one product only), small and floating in whitespace. NO product grid, NO hero photograph filling the page, NO additional sections, NO magazine-cover layout, NO multiple images stacked, NO color blocks. Cream background everywhere. The page must be at least 50 percent empty whitespace.. Theme/aesthetic from the brief: Old-Hollywood, art-deco, sunset gold, theatrical, red-carpet. Featured products on the page: Silk slip gown, diamond chandelier earrings, gold cuff bracelet, satin tuxedo, velvet evening clutch. Crisp UI typography, structured grid where the layout calls for one, generous whitespace where the layout calls for it. 3:4 portrait orientation, sharp focus, high-quality mockup. No watermarks, no readable text — use placeholder/lorem-style copy only.",
+        "frontUrl": "https://tempfile.aiquickdraw.com/workers/nano/image_1777252908284_k6yda5.png",
+        "frontStatus": "done",
+        "frontError": null
+      },
+      {
+        "category": "Contemporary",
+        "name": "Spectrum",
+        "description": "Bold sans-serif headline, modern card grid, one striking accent color cutting through the page.",
+        "frontPrompt": "A WEBSITE HOMEPAGE UI MOCKUP — render as if it's a screenshot of a real designed website seen in a desktop browser. It MUST look like an actual web page (realistic web layout proportions, real interface elements like nav, headlines, buttons) — NOT a moodboard, NOT a flat-lay, NOT a fashion photograph, NOT a magazine spread, NOT a color swatch sheet. Concept: \"Marquee — Hollywood-glamour couture and fine jewelry\". Design style (follow this carefully — it sets the density and feel): contemporary modern web design with crisp white background, near-black sans-serif type, vivid coral accent #ff5a3c, structured grid with sharp corners. Layout (follow this literally — render exactly the elements described, in the described proportions, do NOT add extra sections, hero photographs, product grids, or magazine-style blocks that are not explicitly described): bold horizontal nav with 4 links on white, oversized geometric sans-serif hero headline filling most of the width, sharp coral CTA button, three product cards in a row beneath the hero each with a clean product photograph and short label. Theme/aesthetic from the brief: Old-Hollywood, art-deco, sunset gold, theatrical, red-carpet. Featured products on the page: Silk slip gown, diamond chandelier earrings, gold cuff bracelet, satin tuxedo, velvet evening clutch. Crisp UI typography, structured grid where the layout calls for one, generous whitespace where the layout calls for it. 3:4 portrait orientation, sharp focus, high-quality mockup. No watermarks, no readable text — use placeholder/lorem-style copy only.",
+        "frontUrl": "https://tempfile.aiquickdraw.com/workers/nano/image_1777252914016_bv6uba.png",
+        "frontStatus": "done",
+        "frontError": null
+      },
+      {
+        "category": "Contemporary",
+        "name": "Pavilion",
+        "description": "Soft warm gradient hero. Layered cards with refined shadows, mixed serif and sans pairing.",
+        "frontPrompt": "A WEBSITE HOMEPAGE UI MOCKUP — render as if it's a screenshot of a real designed website seen in a desktop browser. It MUST look like an actual web page (realistic web layout proportions, real interface elements like nav, headlines, buttons) — NOT a moodboard, NOT a flat-lay, NOT a fashion photograph, NOT a magazine spread, NOT a color swatch sheet. Concept: \"Marquee — Hollywood-glamour couture and fine jewelry\". Design style (follow this carefully — it sets the density and feel): contemporary refined warm web design with soft peach-to-cream gradient backgrounds, deep burgundy text, sand accents, layered cards with soft drop shadows. Layout (follow this literally — render exactly the elements described, in the described proportions, do NOT add extra sections, hero photographs, product grids, or magazine-style blocks that are not explicitly described): homepage with peach-to-cream gradient hero, large mixed display-serif headline, a soft sand pill CTA button, below the fold a row of three layered floating product cards each with rounded corners and soft shadow on a sand panel. Theme/aesthetic from the brief: Old-Hollywood, art-deco, sunset gold, theatrical, red-carpet. Featured products on the page: Silk slip gown, diamond chandelier earrings, gold cuff bracelet, satin tuxedo, velvet evening clutch. Crisp UI typography, structured grid where the layout calls for one, generous whitespace where the layout calls for it. 3:4 portrait orientation, sharp focus, high-quality mockup. No watermarks, no readable text — use placeholder/lorem-style copy only.",
+        "frontUrl": "https://tempfile.aiquickdraw.com/workers/nano/image_1777252907989_8499ue.png",
+        "frontStatus": "done",
+        "frontError": null
+      },
+      {
+        "category": "Dynamic",
+        "name": "Velocity",
+        "description": "Full-bleed black hero, oversized condensed display type, an electric accent breaking the grid.",
+        "frontPrompt": "A WEBSITE HOMEPAGE UI MOCKUP — render as if it's a screenshot of a real designed website seen in a desktop browser. It MUST look like an actual web page (realistic web layout proportions, real interface elements like nav, headlines, buttons) — NOT a moodboard, NOT a flat-lay, NOT a fashion photograph, NOT a magazine spread, NOT a color swatch sheet. Concept: \"Marquee — Hollywood-glamour couture and fine jewelry\". Design style (follow this carefully — it sets the density and feel): dynamic high-contrast web design with deep black background, white type, electric yellow accent #f4ff00, oversized heavy condensed sans-serif display, kinetic off-grid composition. Layout (follow this literally — render exactly the elements described, in the described proportions, do NOT add extra sections, hero photographs, product grids, or magazine-style blocks that are not explicitly described): full-bleed black homepage with oversized white heavy condensed sans-serif headline broken across multiple lines, one word highlighted in electric yellow, tilted product photograph in lower-right quadrant breaking the grid, top nav with a small white logo and minimal links. Theme/aesthetic from the brief: Old-Hollywood, art-deco, sunset gold, theatrical, red-carpet. Featured products on the page: Silk slip gown, diamond chandelier earrings, gold cuff bracelet, satin tuxedo, velvet evening clutch. Crisp UI typography, structured grid where the layout calls for one, generous whitespace where the layout calls for it. 3:4 portrait orientation, sharp focus, high-quality mockup. No watermarks, no readable text — use placeholder/lorem-style copy only.",
+        "frontUrl": "https://tempfile.aiquickdraw.com/workers/nano/image_1777252908210_yvtolm.png",
+        "frontStatus": "done",
+        "frontError": null
+      },
+      {
+        "category": "Dynamic",
+        "name": "Apex",
+        "description": "Magazine-cover energy. Color-blocked sections, a hero shot at scale, bold uppercase display type.",
+        "frontPrompt": "A WEBSITE HOMEPAGE UI MOCKUP — render as a screenshot of a real designed website on a desktop browser. Concept: \"Marquee — Hollywood-glamour couture and fine jewelry\". Design: bold magazine-cover style web design with saturated red, deep cobalt blue, and warm cream, oversized uppercase display headlines, color-blocked sections. Layout: a magazine-cover homepage with a large dramatic hero composition taking the upper 70 percent of the viewport, an oversized uppercase display heading layered over it in saturated red, supporting sans-serif tag lines in white and cream as cover callouts. Below the fold: one high-contrast cobalt section with white text. Theme: old-Hollywood, art-deco, sunset gold, theatrical, red-carpet. Featured products on the page: silk gown, diamond chandelier earrings, gold cuff. Realistic web layout proportions, crisp UI typography, 3:4 portrait. No watermarks, no readable text — placeholder content only. Web mockup, not a magazine print.",
+        "frontUrl": "https://tempfile.aiquickdraw.com/workers/nano/image_1777252962274_pxgw31.png",
+        "frontStatus": "done",
+        "frontError": null
+      }
+    ]
+  }
+]

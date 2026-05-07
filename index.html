@@ -783,6 +783,134 @@
       background: rgba(198,165,89,0.08);
       color: #E6B979;
     }
+
+    /* ── Contact form ── */
+    .contact-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(198, 165, 89, 0.75);
+      margin-bottom: 8px;
+      font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    }
+    .contact-input,
+    .contact-textarea {
+      width: 100%;
+      background: rgba(8, 5, 1, 0.55);
+      border: 1px solid rgba(198, 165, 89, 0.18);
+      border-radius: 10px;
+      padding: 14px 16px;
+      color: #f5ead6;
+      font-size: 14.5px;
+      font-family: 'Montserrat', sans-serif;
+      outline: none;
+      transition: border-color 240ms ease, background 240ms ease, box-shadow 240ms ease;
+    }
+    .contact-input::placeholder,
+    .contact-textarea::placeholder { color: rgba(245, 234, 214, 0.3); }
+    .contact-input:focus,
+    .contact-textarea:focus {
+      border-color: rgba(230, 185, 121, 0.55);
+      background: rgba(12, 8, 2, 0.85);
+      box-shadow: 0 0 0 4px rgba(230, 185, 121, 0.08);
+    }
+    .contact-textarea { resize: vertical; min-height: 140px; line-height: 1.55; }
+    .contact-counter {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: rgba(245, 234, 214, 0.4);
+      margin-top: 6px;
+      display: block;
+      text-align: right;
+      letter-spacing: 0.05em;
+    }
+    .contact-counter.warn { color: #E6B979; }
+    .contact-counter.danger { color: #ff8b6b; }
+
+    .contact-newsletter {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 13px;
+      color: rgba(245, 234, 214, 0.65);
+      cursor: pointer;
+      user-select: none;
+      line-height: 1.55;
+    }
+    .contact-newsletter input {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border: 1.5px solid rgba(198, 165, 89, 0.5);
+      border-radius: 4px;
+      background: rgba(8, 5, 1, 0.6);
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+      position: relative;
+      transition: background 180ms ease, border-color 180ms ease;
+    }
+    .contact-newsletter input:checked {
+      background: #E6B979;
+      border-color: #E6B979;
+    }
+    .contact-newsletter input:checked::after {
+      content: '';
+      position: absolute;
+      left: 5px; top: 1px;
+      width: 5px; height: 9px;
+      border: solid #1a1208;
+      border-width: 0 2px 2px 0;
+      transform: rotate(42deg);
+    }
+
+    .contact-status {
+      margin-top: 18px;
+      font-size: 12.5px;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.04em;
+      min-height: 22px;
+      transition: color 200ms ease, opacity 200ms ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .contact-status.pending { color: rgba(245, 234, 214, 0.55); }
+    .contact-status.success { color: #b9e4a8; }
+    .contact-status.error   { color: #ff9c80; }
+    .contact-status .dot-spin {
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(198, 165, 89, 0.25);
+      border-top-color: #E6B979;
+      animation: contactSpin 700ms linear infinite;
+    }
+    @keyframes contactSpin { to { transform: rotate(360deg); } }
+
+    .contact-trust-list { display: flex; flex-direction: column; gap: 18px; }
+    .contact-trust-item { display: flex; gap: 14px; align-items: flex-start; }
+    .contact-trust-icon {
+      width: 32px; height: 32px;
+      flex-shrink: 0;
+      border-radius: 8px;
+      background: rgba(198, 165, 89, 0.08);
+      border: 1px solid rgba(198, 165, 89, 0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: #E6B979;
+    }
+    .contact-trust-text {
+      font-size: 14px;
+      color: rgba(245, 234, 214, 0.7);
+      line-height: 1.55;
+    }
+    .contact-trust-text strong {
+      color: #f5ead6;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 2px;
+    }
   </style>
 </head>
 
@@ -810,7 +938,11 @@
         <a href="#how-it-works" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">How It Works</a>
         <a href="#pricing" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">Pricing</a>
         <a href="#testimonials" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">Reviews</a>
+        <a href="moodboard.html" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">Moodboard</a>
+        <a href="Youtube%20Analyst/youtube-analyst.html" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">YouTube Analyst</a>
         <a href="anything.html" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">Lantern Fund</a>
+        <a href="about/about.html" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">About</a>
+        <a href="#contact" class="text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors duration-200">Contact</a>
       </div>
 
       <!-- CTA -->
@@ -833,7 +965,11 @@
       <a href="#how-it-works" class="block py-3 text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors">How It Works</a>
       <a href="#pricing" class="block py-3 text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors">Pricing</a>
       <a href="#testimonials" class="block py-3 text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors">Reviews</a>
+      <a href="moodboard.html" class="block py-3 text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors">Moodboard</a>
+      <a href="Youtube%20Analyst/youtube-analyst.html" class="block py-3 text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors">YouTube Analyst</a>
       <a href="anything.html" class="block py-3 text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors">Lantern Fund</a>
+      <a href="about/about.html" class="block py-3 text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors">About</a>
+      <a href="#contact" class="block py-3 text-sm font-medium text-[#c9b882] hover:text-[#E6B979] transition-colors">Contact</a>
       <div class="pt-3 flex flex-col gap-3">
         <a href="#" class="btn-secondary" style="width:100%; text-align:center;">Log In</a>
         <a href="#" class="btn-primary" style="width:100%; text-align:center;">Get Started</a>
@@ -1633,6 +1769,96 @@
 
 
   <!-- ════════════════════════════════
+       CONTACT
+  ════════════════════════════════ -->
+  <section id="contact" class="py-16 md:py-28 px-5 sm:px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-14 md:mb-16">
+        <div class="section-label fade-up">Contact</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-900 display-heading mb-5 fade-up">
+          Tell us about <span class="gold-text">your stack</span>
+        </h2>
+        <p class="text-lg text-[rgba(245,234,214,0.55)] max-w-2xl mx-auto fade-up leading-[1.7]">
+          A question, a demo request, or a wild idea — drop us a note and the team will reply within one business day.
+        </p>
+      </div>
+
+      <div class="grid lg:grid-cols-[1fr_1.15fr] gap-10 lg:gap-16 max-w-5xl mx-auto items-start">
+        <!-- Trust signals -->
+        <div class="fade-up flex flex-col gap-7 lg:sticky lg:top-24">
+          <ul class="contact-trust-list">
+            <li class="contact-trust-item">
+              <div class="contact-trust-icon">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/></svg>
+              </div>
+              <div class="contact-trust-text">
+                <strong>One business day reply</strong>
+                Real engineers, no chatbots. We read every message.
+              </div>
+            </li>
+            <li class="contact-trust-item">
+              <div class="contact-trust-icon">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div class="contact-trust-text">
+                <strong>Encrypted in transit &amp; at rest</strong>
+                Stored securely. Never sold, never shared.
+              </div>
+            </li>
+            <li class="contact-trust-item">
+              <div class="contact-trust-icon">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              </div>
+              <div class="contact-trust-text">
+                <strong>Confirmation in your inbox</strong>
+                You'll get an instant receipt — and a real response soon after.
+              </div>
+            </li>
+          </ul>
+
+          <div class="pt-2" style="border-top: 1px solid rgba(198,165,89,0.12);">
+            <p class="font-mono uppercase tracking-widest text-[10.5px] mt-6" style="color:rgba(198,165,89,0.6);">Or reach us directly</p>
+            <p class="text-sm mt-2" style="color:rgba(245,234,214,0.7);">hello@tester.io</p>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form id="contact-form" class="feature-card fade-up" style="padding: 28px 28px 32px;" novalidate>
+          <div class="grid sm:grid-cols-2 gap-5 mb-5">
+            <div>
+              <label for="contact-name" class="contact-label">Your name</label>
+              <input id="contact-name" name="name" type="text" maxlength="200" required autocomplete="name" placeholder="Ada Okonkwo" class="contact-input" />
+            </div>
+            <div>
+              <label for="contact-email" class="contact-label">Email</label>
+              <input id="contact-email" name="email" type="email" maxlength="200" required autocomplete="email" placeholder="ada@stripe.com" class="contact-input" />
+            </div>
+          </div>
+
+          <div class="mb-5">
+            <label for="contact-message" class="contact-label">What's on your mind?</label>
+            <textarea id="contact-message" name="message" maxlength="5000" required placeholder="Tell us a bit about your team and what you're trying to test…" class="contact-textarea"></textarea>
+            <span id="contact-counter" class="contact-counter">0 / 5000</span>
+          </div>
+
+          <label class="contact-newsletter mb-6" for="contact-newsletter">
+            <input id="contact-newsletter" name="newsletter" type="checkbox" />
+            <span>Send me occasional product updates. No spam, unsubscribe anytime.</span>
+          </label>
+
+          <button id="contact-submit" type="submit" class="btn-primary" style="width:100%; padding:15px 28px; font-size:14px; justify-content:center;">
+            <span id="contact-submit-label">Send message</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </button>
+
+          <div id="contact-status" class="contact-status" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════
        FOOTER
   ════════════════════════════════ -->
   <footer class="border-t border-[rgba(198,165,89,0.1)] px-5 sm:px-6 pt-12 md:pt-16 pb-8">
@@ -1682,6 +1908,8 @@
           <ul class="flex flex-col gap-3">
             <li><a href="#" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">Documentation</a></li>
             <li><a href="#" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">API Reference</a></li>
+            <li><a href="moodboard.html" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">Moodboard</a></li>
+            <li><a href="Youtube%20Analyst/youtube-analyst.html" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">YouTube Analyst</a></li>
             <li><a href="#" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">Integrations</a></li>
             <li><a href="#" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">Open Source</a></li>
           </ul>
@@ -1690,11 +1918,12 @@
         <div>
           <h4 class="text-sm font-700 text-[#f5ead6] mb-5 uppercase tracking-widest" style="font-size:11px;">Company</h4>
           <ul class="flex flex-col gap-3">
-            <li><a href="#" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">About</a></li>
+            <li><a href="about/about.html" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">About</a></li>
             <li><a href="#" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">Blog</a></li>
             <li><a href="#" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">Careers</a></li>
             <li><a href="#" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">Contact</a></li>
             <li><a href="anything.html" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">Lantern Fund</a></li>
+            <li><a href="about/about.html" class="text-sm text-[rgba(245,234,214,0.45)] hover:text-[#E6B979] transition-colors">Contact</a></li>
           </ul>
         </div>
       </div>
@@ -1999,6 +2228,81 @@
       }, { threshold: 0.06 });
       document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
     });
+  </script>
+
+  <!-- Contact form: POST to /api/contact (Supabase + Sheets + Resend pipeline) -->
+  <script>
+    (() => {
+      const form     = document.getElementById('contact-form');
+      if (!form) return;
+      const status   = document.getElementById('contact-status');
+      const message  = document.getElementById('contact-message');
+      const counter  = document.getElementById('contact-counter');
+      const button   = document.getElementById('contact-submit');
+      const btnLabel = document.getElementById('contact-submit-label');
+      const MAX = 5000;
+
+      function updateCounter() {
+        const n = message.value.length;
+        counter.textContent = n + ' / ' + MAX;
+        counter.classList.toggle('warn',   n >= MAX * 0.8 && n < MAX);
+        counter.classList.toggle('danger', n >= MAX);
+      }
+      message.addEventListener('input', updateCounter);
+      updateCounter();
+
+      function setStatus(kind, text, withSpinner) {
+        status.className = 'contact-status' + (kind ? ' ' + kind : '');
+        status.innerHTML = (withSpinner ? '<span class="dot-spin" aria-hidden="true"></span>' : '') +
+          '<span>' + text.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])) + '</span>';
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (button.disabled) return;
+
+        const fd = new FormData(form);
+        const payload = {
+          name:       (fd.get('name')    || '').toString().trim(),
+          email:      (fd.get('email')   || '').toString().trim(),
+          message:    (fd.get('message') || '').toString().trim(),
+          newsletter: fd.get('newsletter') === 'on',
+        };
+
+        button.disabled = true;
+        btnLabel.textContent = 'Sending…';
+        setStatus('pending', 'Sending your message…', true);
+
+        try {
+          const r = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          let data = null;
+          try { data = await r.json(); } catch { /* ignore */ }
+
+          if (r.ok && data && data.ok) {
+            setStatus('success', '✓ Message sent. Redirecting to confirmation…', false);
+            setTimeout(() => {
+              window.location = (data && data.redirect) || '/thank-you.html';
+            }, 700);
+          } else {
+            const errMsg =
+              (data && Array.isArray(data.errors) && data.errors.join(' ')) ||
+              (data && data.error) ||
+              'We couldn’t send your message. Please try again.';
+            setStatus('error', errMsg, false);
+            button.disabled = false;
+            btnLabel.textContent = 'Send message';
+          }
+        } catch (err) {
+          setStatus('error', 'Network error — please check your connection and try again.', false);
+          button.disabled = false;
+          btnLabel.textContent = 'Send message';
+        }
+      });
+    })();
   </script>
 
   </div><!-- /#page-content -->

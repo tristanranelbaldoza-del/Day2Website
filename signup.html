@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sign Up — Tester.io</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:     #15100a;
+    --bg-2:   #1d1609;
+    --panel:  #221a0e;
+    --panel-2:#2a2212;
+    --border: rgba(198, 165, 89, 0.18);
+    --gold:   #c6a559;
+    --gold-2: #e6b979;
+    --cream:  #f5ead6;
+    --dim:    #8a7a58;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Montserrat', -apple-system, sans-serif;
+    background:
+      radial-gradient(1000px 500px at 80% -10%, rgba(198,165,89,0.12), transparent 60%),
+      radial-gradient(800px 400px at 20% 110%, rgba(230,185,121,0.08), transparent 60%),
+      var(--bg);
+    color: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  header { padding: 24px 32px; display: flex; align-items: center; gap: 20px; }
+  .logo { font-size: 13px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--cream); }
+  .logo span { color: var(--gold-2); }
+  .back { margin-left: auto; font-size: 13px; font-weight: 500; color: rgba(245,234,214,0.55); transition: color 160ms; }
+  .back:hover { color: var(--gold-2); }
+
+  .wrap { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; padding: 40px 60px 80px; max-width: 1200px; width: 100%; margin: 0 auto; align-items: center; }
+  @media (max-width: 860px) { .wrap { grid-template-columns: 1fr; padding: 30px 24px 80px; gap: 30px; } .value .feature-list { display: none; } }
+
+  /* Left side — value prop */
+  .value h1 {
+    font-size: clamp(36px, 5.5vw, 54px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    margin-bottom: 22px;
+    background: linear-gradient(135deg, #f0c990 0%, #e6b979 50%, #c6a559 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .value .lede { font-size: 17px; line-height: 1.6; color: rgba(245,234,214,0.72); margin-bottom: 32px; max-width: 44ch; }
+  .feature-list { list-style: none; }
+  .feature-list li { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; font-size: 14.5px; line-height: 1.5; color: rgba(245,234,214,0.88); }
+  .check { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(198,165,89,0.15); border: 1px solid rgba(198,165,89,0.35); color: var(--gold-2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+
+  /* Right side — form card */
+  .card {
+    padding: 44px 40px;
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #f0c990, var(--gold) 50%, var(--gold-2)); }
+  .card h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 6px; }
+  .card .sub { font-size: 13.5px; color: rgba(245,234,214,0.6); margin-bottom: 22px; line-height: 1.55; }
+
+  .notice {
+    background: rgba(230,185,121,0.08);
+    border: 1px solid rgba(230,185,121,0.22);
+    border-radius: 10px;
+    padding: 11px 13px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(245,234,214,0.85);
+    margin-bottom: 22px;
+  }
+  .notice strong { color: var(--gold-2); font-weight: 700; }
+
+  label { display: block; font-size: 11px; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; color: var(--dim); margin: 16px 0 7px; }
+  input {
+    width: 100%; font-family: inherit; color: var(--cream);
+    background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: 14.5px; outline: none;
+    transition: border-color 180ms, box-shadow 180ms;
+  }
+  input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(198,165,89,0.15); }
+  .hint { font-size: 11.5px; color: rgba(245,234,214,0.45); margin-top: 5px; }
+
+  .terms { margin-top: 18px; font-size: 12px; color: rgba(245,234,214,0.55); display: flex; gap: 8px; align-items: flex-start; }
+  .terms input { width: auto; margin-top: 3px; }
+  .terms a { color: var(--gold-2); font-weight: 600; }
+  .terms a:hover { text-decoration: underline; }
+
+  .btn-primary {
+    width: 100%; margin-top: 22px; padding: 14px; font-family: inherit; font-weight: 700; font-size: 14.5px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+    color: #1a1207; border: none; border-radius: 10px; cursor: pointer; letter-spacing: 0.01em;
+    transition: transform 160ms, box-shadow 160ms;
+    box-shadow: 0 6px 20px rgba(198,165,89,0.25), inset 0 1px 0 rgba(255,255,255,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(198,165,89,0.35), inset 0 1px 0 rgba(255,255,255,0.35); }
+
+  .footer-link { margin-top: 22px; text-align: center; font-size: 13px; color: rgba(245,234,214,0.55); }
+  .footer-link a { color: var(--gold-2); font-weight: 600; }
+  .footer-link a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+  <header>
+    <a href="/" class="logo">Tester<span>.io</span></a>
+    <a href="/" class="back">← Back to site</a>
+  </header>
+
+  <div class="wrap">
+    <!-- LEFT: the pitch -->
+    <div class="value">
+      <h1>Ship tests without shipping chaos.</h1>
+      <p class="lede">Join thousands of teams using Tester.io to run end-to-end tests on every commit, catch regressions before they ship, and keep QA cycles to minutes — not weeks.</p>
+      <ul class="feature-list">
+        <li><span class="check">✓</span> Unlimited test runs on every pull request</li>
+        <li><span class="check">✓</span> AI-generated test cases from user stories</li>
+        <li><span class="check">✓</span> Cross-browser + mobile from one suite</li>
+        <li><span class="check">✓</span> Slack + GitHub integrations built in</li>
+        <li><span class="check">✓</span> No credit card required — 14-day free trial</li>
+      </ul>
+    </div>
+
+    <!-- RIGHT: the signup form -->
+    <div class="card">
+      <h2>Create your free account</h2>
+      <p class="sub">14-day trial. Cancel anytime. No setup required.</p>
+
+      <div class="notice">
+        <strong>Heads up:</strong> new signups are in private beta.
+        <a href="/#contact" style="color: var(--gold-2); font-weight: 600;">Drop us a note</a>
+        and we'll get you access within one business day.
+      </div>
+
+      <form action="/coming-soon.html" method="post" onsubmit="event.preventDefault(); window.location='/#contact';">
+        <label for="name">Full name</label>
+        <input id="name" type="text" placeholder="Alex Chen" autocomplete="name" required />
+
+        <label for="email">Work email</label>
+        <input id="email" type="email" placeholder="alex@company.com" autocomplete="email" required />
+
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="At least 10 characters" autocomplete="new-password" required minlength="10" />
+        <div class="hint">Use 10 or more characters, mix of letters + symbols recommended.</div>
+
+        <label class="terms">
+          <input type="checkbox" required />
+          <span>I agree to the <a href="/coming-soon.html">Terms of Service</a> and <a href="/coming-soon.html">Privacy Policy</a>.</span>
+        </label>
+
+        <button type="submit" class="btn-primary">Create Free Account</button>
+      </form>
+
+      <p class="footer-link">
+        Already have an account? <a href="/login.html">Log in</a>
+      </p>
+    </div>
+  </div>
+
+</body>
+</html>

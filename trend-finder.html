@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Trend Finder — surface the top trending articles from the live web, then mine each one for ranked ideas with Gemini AI." />
+  <title>Trend Finder — Tester.io</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'canvas':       '#0E0A03',
+            'canvas-elev':  '#150E05',
+            'canvas-panel': '#1B1306',
+            'ink':          '#f5ead6',
+            'ink-dim':      '#c9b882',
+            'ink-faint':    '#8B6F2E',
+            'gold':         '#E6B979',
+            'gold-deep':    '#C6A559',
+            'gold-soft':    '#F0C990',
+            'line':         'rgba(230, 185, 121, 0.18)',
+            'line-strong':  'rgba(230, 185, 121, 0.32)',
+          },
+          fontFamily: { sans: ['Montserrat', 'sans-serif'] },
+          letterSpacing: { wide2: '0.22em' },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    body {
+      background-color: #0E0A03;
+      background-image:
+        radial-gradient(ellipse 70% 45% at 50% 12%, rgba(230, 185, 121, 0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 35% at 90% 100%, rgba(198, 165, 89, 0.05) 0%, transparent 70%);
+      background-attachment: fixed;
+      color: #f5ead6;
+      font-family: 'Montserrat', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.05' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.92  0 0 0 0 0.84  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.45'/></svg>");
+      opacity: 0.06; mix-blend-mode: overlay;
+    }
+    ::selection { background: rgba(230,185,121,0.35); color: #fff; }
+    img { display: block; max-width: 100%; }
+
+    .gold-text { color: #E6B979; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 13px 26px; border-radius: 4px;
+      background: #E6B979; color: #0E0A03;
+      font-weight: 600; font-size: 13.5px; letter-spacing: 0.04em;
+      transition: background 200ms, box-shadow 220ms, transform 100ms;
+    }
+    .btn-primary:hover { background: #F0C990; box-shadow: 0 12px 36px -14px rgba(230, 185, 121, 0.55); }
+    .btn-primary:active { transform: translateY(1px); }
+    .btn-primary:disabled { background: rgba(230, 185, 121, 0.25); color: rgba(245, 234, 214, 0.55); cursor: not-allowed; box-shadow: none; }
+
+    /* Search bar */
+    .search-shell {
+      position: relative;
+      display: flex; align-items: center;
+      background: rgba(21, 14, 5, 0.85);
+      border: 1px solid rgba(230, 185, 121, 0.22);
+      border-radius: 999px;
+      padding: 6px 6px 6px 22px;
+      transition: border-color 220ms, box-shadow 220ms;
+    }
+    .search-shell:focus-within {
+      border-color: rgba(230, 185, 121, 0.55);
+      box-shadow: 0 14px 50px -22px rgba(230, 185, 121, 0.45);
+    }
+    .search-shell input {
+      flex: 1; min-width: 0;
+      background: transparent; border: 0; outline: 0;
+      color: #f5ead6;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      padding: 14px 14px;
+      caret-color: #E6B979;
+    }
+    .search-shell input::placeholder { color: rgba(139, 111, 46, 0.85); font-weight: 400; }
+    /* The submit button sits inside the gold-rimmed pill, so it has to read
+       as part of the pill — not a separate block dropped in. Matches the
+       parent radius (999px), uses a subtle gold gradient for depth, and a
+       hairline inner highlight so it lifts off the field without screaming. */
+    .search-shell .btn-primary {
+      flex-shrink: 0;
+      border-radius: 999px;
+      padding: 11px 22px;
+      font-size: 12.5px;
+      letter-spacing: 0.06em;
+      background-image: linear-gradient(180deg, #F0C990 0%, #E6B979 55%, #C6A559 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 240, 210, 0.55),
+        inset 0 -1px 0 rgba(120, 80, 20, 0.18),
+        0 6px 18px -10px rgba(230, 185, 121, 0.45);
+    }
+    .search-shell .btn-primary:hover {
+      background-image: linear-gradient(180deg, #F6D2A0 0%, #EFC287 55%, #D2B068 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 240, 210, 0.7),
+        inset 0 -1px 0 rgba(120, 80, 20, 0.18),
+        0 14px 38px -14px rgba(230, 185, 121, 0.6);
+    }
+    .search-shell .btn-primary:active { transform: translateY(1px); }
+    .search-shell .btn-primary svg { opacity: 0.85; }
+
+    /* Result card */
+    .card {
+      display: flex; flex-direction: column;
+      background: rgba(21, 14, 5, 0.55);
+      border: 1px solid rgba(230, 185, 121, 0.18);
+      border-radius: 6px;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      transition: transform 320ms cubic-bezier(.2,.8,.2,1), border-color 320ms, box-shadow 320ms cubic-bezier(.2,.8,.2,1);
+    }
+    .card:hover { transform: translateY(-3px); border-color: rgba(230, 185, 121, 0.55); box-shadow: 0 22px 56px -28px rgba(230, 185, 121, 0.40); }
+    .card.is-active { border-color: rgba(230, 185, 121, 0.75); box-shadow: 0 22px 56px -28px rgba(230, 185, 121, 0.55); }
+
+    .card-thumb {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: linear-gradient(135deg, #150E05 0%, #1B1306 100%);
+    }
+    .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 600ms cubic-bezier(.2,.8,.2,1); }
+    .card:hover .card-thumb img { transform: scale(1.04); }
+    .card-thumb-fallback {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; color: rgba(230, 185, 121, 0.4);
+    }
+    .card-rank {
+      position: absolute; top: 12px; left: 12px;
+      padding: 4px 10px; border-radius: 999px;
+      background: rgba(14, 10, 3, 0.78);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(230, 185, 121, 0.32);
+      font-size: 10.5px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: #E6B979;
+    }
+
+    .card-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    .card-source {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 10.5px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: #E6B979;
+    }
+    .card-source::before {
+      content: ''; width: 5px; height: 5px; border-radius: 999px;
+      background: #E6B979;
+      box-shadow: 0 0 0 3px rgba(230, 185, 121, 0.18);
+    }
+    .card-name {
+      font-size: 15.5px; font-weight: 600;
+      color: #f5ead6; line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-actions {
+      margin-top: auto; padding-top: 6px;
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .btn-action {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 4px;
+      border: 1px solid rgba(230, 185, 121, 0.32);
+      color: #E6B979;
+      background: transparent;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background 200ms, border-color 200ms, color 200ms, transform 100ms;
+    }
+    .btn-action:hover:not(:disabled) { background: #E6B979; color: #0E0A03; border-color: #E6B979; }
+    .btn-action:active:not(:disabled) { transform: translateY(1px); }
+    .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-action.is-loading { color: rgba(230,185,121,0.55); border-color: rgba(230,185,121,0.18); }
+    .btn-action--solid { background: rgba(230, 185, 121, 0.12); }
+
+    /* Ideas panel (right rail) */
+    .ideas-panel {
+      background: rgba(21, 14, 5, 0.65);
+      border: 1px solid rgba(230, 185, 121, 0.18);
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      padding: 24px;
+      position: sticky; top: 90px;
+      max-height: calc(100vh - 110px);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .ideas-panel-header {
+      flex-shrink: 0;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(230, 185, 121, 0.18);
+      margin-bottom: 18px;
+    }
+    .ideas-panel-eyebrow {
+      font-size: 10.5px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: #E6B979;
+    }
+    .ideas-panel-title {
+      font-size: 16px; font-weight: 700;
+      color: #f5ead6; line-height: 1.35;
+      margin-top: 8px;
+    }
+    .ideas-panel-meta { font-size: 11.5px; color: #8B6F2E; margin-top: 6px; font-family: ui-monospace, 'SF Mono', monospace; }
+    .ideas-panel-body { flex: 1; overflow-y: auto; padding-right: 4px; }
+    .ideas-panel-body::-webkit-scrollbar { width: 6px; }
+    .ideas-panel-body::-webkit-scrollbar-thumb { background: rgba(230, 185, 121, 0.22); border-radius: 999px; }
+    .ideas-panel-body::-webkit-scrollbar-track { background: transparent; }
+
+    .idea-row {
+      display: flex; gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(230, 185, 121, 0.10);
+    }
+    .idea-row:last-child { border-bottom: 0; }
+    .idea-rank {
+      flex-shrink: 0;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 999px;
+      background: rgba(230, 185, 121, 0.12);
+      border: 1px solid rgba(230, 185, 121, 0.32);
+      color: #E6B979;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.04em;
+      font-family: ui-monospace, 'SF Mono', monospace;
+    }
+    .idea-text { font-size: 13.5px; color: #f5ead6; line-height: 1.5; }
+
+    /* Google News redirect warning banner */
+    .gn-warning {
+      background: rgba(230, 185, 121, 0.08);
+      border: 1px solid rgba(230, 185, 121, 0.45);
+      border-left: 3px solid #E6B979;
+      border-radius: 6px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+    .gn-warning h4 {
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: #E6B979;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .gn-warning p { font-size: 13px; color: #c9b882; line-height: 1.55; margin-top: 8px; }
+    .gn-warning .gn-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 10px;
+      color: #E6B979; font-weight: 600; font-size: 12.5px;
+      letter-spacing: 0.04em;
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+    .gn-warning .gn-link:hover { color: #F0C990; }
+    .gn-input-row {
+      display: flex; gap: 8px; margin-top: 12px;
+    }
+    .gn-input {
+      flex: 1; min-width: 0;
+      background: rgba(14, 10, 3, 0.7);
+      border: 1px solid rgba(230, 185, 121, 0.32);
+      border-radius: 4px;
+      color: #f5ead6;
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 12.5px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 200ms;
+    }
+    .gn-input:focus { border-color: #E6B979; }
+    .gn-input::placeholder { color: rgba(139, 111, 46, 0.7); }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 60;
+      background: rgba(14, 10, 3, 0.78);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      animation: fade 200ms ease-out;
+    }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      width: 100%; max-width: 640px;
+      max-height: 85vh; display: flex; flex-direction: column;
+      background: #150E05;
+      border: 1px solid rgba(230, 185, 121, 0.32);
+      border-radius: 10px;
+      box-shadow: 0 40px 120px -40px rgba(0,0,0,0.9), 0 0 0 1px rgba(230, 185, 121, 0.08) inset;
+      overflow: hidden;
+    }
+    .modal-header { padding: 22px 26px 18px; border-bottom: 1px solid rgba(230, 185, 121, 0.18); }
+    .modal-eyebrow { font-size: 10.5px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #E6B979; }
+    .modal-title { font-size: 19px; font-weight: 700; color: #f5ead6; line-height: 1.35; margin-top: 6px; }
+    .modal-body { flex: 1; overflow-y: auto; padding: 6px 26px 12px; }
+    .modal-footer {
+      padding: 16px 26px 22px;
+      border-top: 1px solid rgba(230, 185, 121, 0.18);
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    }
+    .pick-row {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 14px 4px;
+      border-bottom: 1px solid rgba(230, 185, 121, 0.10);
+      cursor: pointer;
+    }
+    .pick-row:last-child { border-bottom: 0; }
+    .pick-row:hover .pick-text { color: #fff; }
+    .pick-checkbox {
+      flex-shrink: 0;
+      appearance: none; -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border: 1px solid rgba(230, 185, 121, 0.45);
+      border-radius: 3px;
+      background: transparent;
+      cursor: pointer;
+      margin-top: 1px;
+      transition: background 180ms, border-color 180ms;
+      position: relative;
+    }
+    .pick-checkbox:checked { background: #E6B979; border-color: #E6B979; }
+    .pick-checkbox:checked::after {
+      content: ''; position: absolute;
+      left: 5px; top: 1px; width: 6px; height: 11px;
+      border: solid #0E0A03; border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .pick-rank {
+      flex-shrink: 0;
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 11px; color: #E6B979; font-weight: 700;
+      letter-spacing: 0.06em;
+      padding-top: 1px; min-width: 24px;
+    }
+    .pick-text { font-size: 13.5px; color: #f5ead6; line-height: 1.5; flex: 1; transition: color 180ms; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #150E05; border: 1px solid rgba(230, 185, 121, 0.45);
+      color: #f5ead6; padding: 12px 22px; border-radius: 999px;
+      font-size: 13px; font-weight: 500;
+      box-shadow: 0 20px 60px -20px rgba(0,0,0,0.8);
+      z-index: 80;
+      opacity: 0; pointer-events: none;
+      transition: opacity 220ms, transform 220ms;
+    }
+    .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+    /* Loading skeleton */
+    .skeleton .card-thumb,
+    .skeleton .card-line {
+      background: linear-gradient(90deg, rgba(230,185,121,0.06) 0%, rgba(230,185,121,0.14) 50%, rgba(230,185,121,0.06) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s linear infinite;
+    }
+    @keyframes shimmer { 0% { background-position: -150% 0; } 100% { background-position: 250% 0; } }
+    .skeleton .card-line { height: 12px; border-radius: 3px; }
+    .skeleton .card-line.short { width: 50%; }
+
+    /* Reveal */
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    .reveal { animation: rise 600ms cubic-bezier(.2,.8,.2,1) calc(var(--i, 0) * 70ms) both; }
+
+    /* Inline spinner */
+    .spinner {
+      width: 12px; height: 12px;
+      border: 1.5px solid rgba(230, 185, 121, 0.25);
+      border-top-color: #E6B979;
+      border-radius: 999px;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+
+<body class="relative min-h-screen flex flex-col">
+
+  <!-- ═══════════ NAV ═══════════ -->
+  <nav class="relative z-20">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 flex-shrink-0" aria-label="Tester.io">
+        <img src="tester-logo.png" alt="Tester.io logo" class="h-9 w-auto" onerror="this.style.display='none'"/>
+        <span class="text-xl font-bold tracking-tight text-ink">Tester<span class="gold-text">.io</span></span>
+      </a>
+
+      <div class="hidden lg:flex items-center gap-8">
+        <a href="/#features"        class="text-sm font-medium text-ink-dim hover:text-gold transition-colors">Features</a>
+        <a href="/#how-it-works"    class="text-sm font-medium text-ink-dim hover:text-gold transition-colors">How It Works</a>
+        <a href="/#pricing"         class="text-sm font-medium text-ink-dim hover:text-gold transition-colors">Pricing</a>
+        <a href="/anything.html"    class="text-sm font-medium text-ink-dim hover:text-gold transition-colors">Lantern Fund</a>
+        <a href="/Youtube%20Analyst/youtube-analyst.html" class="text-sm font-medium text-ink-dim hover:text-gold transition-colors">YouTube Analyst</a>
+        <a href="/moodboard.html"   class="text-sm font-medium text-ink-dim hover:text-gold transition-colors">Moodboard</a>
+        <a href="/trend-finder.html" class="text-sm font-semibold text-gold transition-colors" aria-current="page">Trend Finder</a>
+        <a href="/about/about.html" class="text-sm font-medium text-ink-dim hover:text-gold transition-colors">About</a>
+      </div>
+
+      <div class="hidden lg:flex items-center gap-4">
+        <a href="/login.html" class="text-sm font-semibold text-ink-dim hover:text-gold transition-colors">Log In</a>
+        <a href="/signup.html" class="btn-primary" style="padding: 10px 22px; font-size: 12px;">Get Started</a>
+      </div>
+
+      <button type="button" id="hamburger" class="lg:hidden p-2 rounded-md text-ink-dim hover:text-gold transition-colors" aria-label="Open menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="hidden flex-col gap-1 px-6 pb-4 border-t border-line">
+      <a href="/#features"     class="block py-3 text-sm font-medium text-ink-dim hover:text-gold transition-colors">Features</a>
+      <a href="/#how-it-works" class="block py-3 text-sm font-medium text-ink-dim hover:text-gold transition-colors">How It Works</a>
+      <a href="/#pricing"      class="block py-3 text-sm font-medium text-ink-dim hover:text-gold transition-colors">Pricing</a>
+      <a href="/anything.html" class="block py-3 text-sm font-medium text-ink-dim hover:text-gold transition-colors">Lantern Fund</a>
+      <a href="/Youtube%20Analyst/youtube-analyst.html" class="block py-3 text-sm font-medium text-ink-dim hover:text-gold transition-colors">YouTube Analyst</a>
+      <a href="/moodboard.html" class="block py-3 text-sm font-medium text-ink-dim hover:text-gold transition-colors">Moodboard</a>
+      <a href="/trend-finder.html" class="block py-3 text-sm font-semibold text-gold">Trend Finder</a>
+      <a href="/about/about.html" class="block py-3 text-sm font-medium text-ink-dim hover:text-gold transition-colors">About</a>
+      <div class="pt-3 flex flex-col gap-3">
+        <a href="/login.html" class="btn-primary" style="background: transparent; border: 1px solid rgba(230, 185, 121, 0.32); color: #c9b882; width:100%; justify-content:center;">Log In</a>
+        <a href="/signup.html" class="btn-primary" style="width:100%; justify-content:center;">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════ HERO + SEARCH ═══════════ -->
+  <header class="relative z-10 px-6 sm:px-10 lg:px-14 pt-16 sm:pt-20 pb-8 sm:pb-10">
+    <div class="max-w-4xl mx-auto text-center">
+      <p class="reveal font-mono text-[11px] tracking-wide2 uppercase text-gold mb-6" style="font-family: ui-monospace, 'SF Mono', monospace; --i: 0;">
+        Live trending · Powered by Gemini
+      </p>
+      <h1 class="reveal" style="font-size: clamp(48px, 8.5vw, 112px); font-weight: 800; line-height: 1; letter-spacing: -0.02em; --i: 1;">
+        Trend <span class="gold-text">Finder</span>
+      </h1>
+      <p class="reveal mt-6 max-w-2xl mx-auto text-[16px] text-ink-dim leading-relaxed" style="--i: 2;">
+        Search any topic, surface the top 5 trending articles from the live web, then mine each one for ranked ideas with Gemini AI.
+      </p>
+
+      <!-- Search bar -->
+      <form id="trend-form" class="reveal mt-10" style="--i: 3;" onsubmit="event.preventDefault(); search();">
+        <div class="search-shell max-w-2xl mx-auto">
+          <svg class="w-5 h-5 text-ink-faint flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="topic" type="text" autocomplete="off" spellcheck="false" maxlength="100"
+                 placeholder="best running shoes 2026, AI startups, cold brew gear…"
+                 aria-label="Topic to search" />
+          <button type="submit" id="search-btn" class="btn-primary">
+            <span id="search-btn-label">Search</span>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div id="status" class="mt-4 text-[12.5px] text-ink-faint font-medium tracking-wide" aria-live="polite">
+          Press Enter or click Search · Google News + Reddit + Hacker News
+        </div>
+      </form>
+    </div>
+  </header>
+
+  <!-- ═══════════ MAIN: results (left) + ideas panel (right) ═══════════ -->
+  <main class="relative z-10 flex-1 px-6 sm:px-10 lg:px-14 pb-20">
+    <div class="max-w-7xl mx-auto">
+
+      <!-- Empty state -->
+      <div id="state-empty" class="text-center py-20">
+        <svg class="w-12 h-12 mx-auto mb-5 text-ink-faint/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/>
+        </svg>
+        <p class="text-ink-dim text-[15px] italic">Search to see what's trending.</p>
+      </div>
+
+      <!-- Loading skeleton -->
+      <div id="state-loading" class="hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- 5 skeleton cards generated by JS -->
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div id="state-error" class="hidden text-center py-16 max-w-xl mx-auto">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-5"
+             style="background: rgba(230, 185, 121, 0.10); border: 1px solid rgba(230, 185, 121, 0.32);">
+          <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+        <p id="error-message" class="text-ink text-[15.5px] leading-relaxed"></p>
+        <p class="mt-3 text-ink-faint text-[12.5px]">
+          If this persists, make sure both servers are running:
+          <span class="font-mono text-ink-dim">node serve.mjs</span> +
+          <span class="font-mono text-ink-dim">cd trend-finder &amp;&amp; python server.py</span>
+        </p>
+      </div>
+
+      <!-- Results layout: grid (left) + sticky ideas panel (right) -->
+      <div id="state-results" class="hidden">
+        <div class="flex items-end justify-between gap-4 flex-wrap mb-7">
+          <div>
+            <p class="text-[10.5px] font-semibold uppercase tracking-wide2 text-gold">Top Trending</p>
+            <h2 id="results-heading" class="text-[28px] sm:text-[32px] font-bold mt-1.5 leading-tight"></h2>
+          </div>
+          <p id="results-meta" class="text-[11.5px] font-mono text-ink-faint" style="font-family: ui-monospace, 'SF Mono', monospace;"></p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-7">
+          <!-- LEFT: result cards -->
+          <div id="results-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
+
+          <!-- RIGHT: ideas panel -->
+          <aside class="ideas-panel" id="ideas-panel" aria-live="polite">
+            <div class="ideas-panel-header">
+              <p class="ideas-panel-eyebrow">Extracted Ideas</p>
+              <h3 class="ideas-panel-title" id="ideas-title">Pick an article to mine its ranked list</h3>
+              <p class="ideas-panel-meta" id="ideas-meta">Click <span class="text-ink-dim">Extract Ideas</span> on any card to see Gemini's ranked breakdown here.</p>
+            </div>
+            <div class="ideas-panel-body" id="ideas-body">
+              <div class="text-ink-faint text-[13px] italic py-6 text-center">No article selected yet.</div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══════════ BROWSE & PICK MODAL ═══════════ -->
+  <div id="pick-modal" class="hidden modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pick-title">
+    <div class="modal" role="document">
+      <div class="modal-header">
+        <p class="modal-eyebrow">Browse & Pick</p>
+        <h3 class="modal-title" id="pick-title">Select the ideas you want to keep</h3>
+      </div>
+      <div class="modal-body" id="pick-body"></div>
+      <div class="modal-footer">
+        <p id="pick-count" class="text-[12px] text-ink-faint">0 selected</p>
+        <div class="flex gap-3">
+          <button type="button" id="pick-cancel" class="btn-action">Cancel</button>
+          <button type="button" id="pick-save" class="btn-primary" style="padding: 10px 20px; font-size: 12px;">Save selection</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="relative z-10 mt-auto px-6 sm:px-10 lg:px-14 py-7 border-t border-line">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-[11.5px] font-medium uppercase tracking-wide2 text-ink-faint">
+      <span>Tester.io · Trend Finder · MMXXVI</span>
+      <div class="flex gap-6">
+        <a href="/" class="hover:text-gold transition-colors">Home</a>
+        <a href="/moodboard.html" class="hover:text-gold transition-colors">Moodboard</a>
+        <a href="/about/about.html" class="hover:text-gold transition-colors">About</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // Same-origin: server.js (port 3000) proxies these to Flask on 5050.
+    const TRENDING_URL = '/api/trending';
+    const EXTRACT_URL  = '/api/extract';
+    const IMG_PROXY    = '/api/proxy-image?url=';
+
+    const $ = (id) => document.getElementById(id);
+    const topicEl    = $('topic');
+    const btn        = $('search-btn');
+    const btnLabel   = $('search-btn-label');
+    const statusEl   = $('status');
+    const stateEmpty   = $('state-empty');
+    const stateLoading = $('state-loading');
+    const stateError   = $('state-error');
+    const stateResults = $('state-results');
+    const errorEl    = $('error-message');
+    const headingEl  = $('results-heading');
+    const metaEl     = $('results-meta');
+    const grid       = $('results-grid');
+    const ideasTitle = $('ideas-title');
+    const ideasMeta  = $('ideas-meta');
+    const ideasBody  = $('ideas-body');
+    const pickModal  = $('pick-modal');
+    const pickBody   = $('pick-body');
+    const pickTitle  = $('pick-title');
+    const pickCount  = $('pick-count');
+    const toastEl    = $('toast');
+
+    // Build skeleton placeholder cards once on load
+    (function () {
+      const skel = stateLoading.querySelector('.grid');
+      for (let i = 0; i < 5; i++) {
+        const c = document.createElement('div');
+        c.className = 'card skeleton';
+        c.innerHTML = `
+          <div class="card-thumb"></div>
+          <div class="card-body">
+            <div class="card-line short"></div>
+            <div class="card-line"></div>
+            <div class="card-line"></div>
+          </div>`;
+        skel.appendChild(c);
+      }
+    })();
+
+    function showState(name) {
+      [stateEmpty, stateLoading, stateError, stateResults].forEach(el => el.classList.add('hidden'));
+      ({ empty: stateEmpty, loading: stateLoading, error: stateError, results: stateResults }[name]).classList.remove('hidden');
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '')
+        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+        .replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    }
+
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('is-visible');
+      clearTimeout(toastEl._t);
+      toastEl._t = setTimeout(() => toastEl.classList.remove('is-visible'), 2400);
+    }
+
+    // ── Search flow ───────────────────────────────────────────────
+    let inFlight = null;
+    // Keeps the most recently fetched results so card-level extract
+    // calls can look up the article object by index without re-fetching.
+    let currentResults = [];
+
+    async function search() {
+      const topic = topicEl.value.trim();
+      if (!topic) {
+        topicEl.focus();
+        statusEl.textContent = 'Please enter a topic to search.';
+        return;
+      }
+
+      if (inFlight) { try { inFlight.abort(); } catch {} }
+      const controller = new AbortController();
+      inFlight = controller;
+
+      btn.disabled = true;
+      btnLabel.textContent = 'Searching…';
+      statusEl.textContent = `Pulling trending articles for “${topic}”…`;
+      showState('loading');
+      // Reset the right-side ideas panel for the new query.
+      resetIdeasPanel();
+
+      try {
+        const url = `${TRENDING_URL}?q=${encodeURIComponent(topic)}`;
+        const r = await fetch(url, { signal: controller.signal });
+        const data = await r.json().catch(() => ({}));
+
+        if (!r.ok) {
+          throw new Error(data?.error || `Request failed (HTTP ${r.status}).`);
+        }
+
+        const results = Array.isArray(data.results) ? data.results : [];
+        if (!results.length) {
+          errorEl.textContent = data.error || `No trending articles found for “${topic}”.`;
+          showState('error');
+          statusEl.textContent = 'No results · try a different topic';
+          return;
+        }
+
+        currentResults = results.slice(0, 5);
+        renderResults(topic, currentResults, data);
+        showState('results');
+        statusEl.textContent = `Found ${currentResults.length} trending articles · click Extract Ideas on any card`;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        const msg = String(err.message || err);
+        if (/Failed to fetch|NetworkError|ERR_CONNECTION_REFUSED/i.test(msg)) {
+          errorEl.textContent = 'Could not reach the server. Make sure node serve.mjs is running on port 3000 and the Flask trend-finder is running on port 5050.';
+        } else {
+          errorEl.textContent = msg;
+        }
+        showState('error');
+        statusEl.textContent = 'Error · see message below';
+      } finally {
+        btn.disabled = false;
+        btnLabel.textContent = 'Search';
+        inFlight = null;
+      }
+    }
+
+    function renderResults(topic, results, data) {
+      headingEl.textContent = topic;
+      const sources = Array.isArray(data.sources) ? data.sources : [];
+      metaEl.textContent = `${results.length} articles · ${sources.length ? sources.join(' · ') : 'web'}`;
+
+      grid.innerHTML = '';
+      results.forEach((r, idx) => {
+        grid.appendChild(buildCard(r, idx));
+      });
+    }
+
+    function buildCard(r, idx) {
+      const card = document.createElement('article');
+      card.className = 'card reveal';
+      card.dataset.idx = String(idx);
+      card.style.setProperty('--i', String(idx));
+      const rank = String(idx + 1).padStart(2, '0');
+
+      // The thumbnail comes from /api/proxy-image (server.js) which streams
+      // the original image with a permissive User-Agent — bypasses hot-link
+      // blocking that breaks direct <img src> for many publishers.
+      const thumbHtml = r.thumbnail
+        ? `<img src="${IMG_PROXY}${encodeURIComponent(r.thumbnail)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+           <div class="card-thumb-fallback" style="display:none;">⌬</div>`
+        : `<div class="card-thumb-fallback">⌬</div>`;
+
+      card.innerHTML = `
+        <div class="card-thumb">
+          <span class="card-rank">#${rank}</span>
+          ${thumbHtml}
+        </div>
+        <div class="card-body">
+          <span class="card-source">${escapeHtml(r.source || 'web')}</span>
+          <h3 class="card-name">
+            <a href="${escapeHtml(r.link)}" target="_blank" rel="noopener noreferrer" class="hover:text-gold transition-colors">
+              ${escapeHtml(r.title)}
+            </a>
+          </h3>
+          <div class="card-actions">
+            <button type="button" class="btn-action btn-action--solid" data-act="extract">
+              <span class="label">Extract Ideas</span>
+            </button>
+            <button type="button" class="btn-action" data-act="pick">Browse &amp; Pick</button>
+          </div>
+        </div>`;
+      return card;
+    }
+
+    // Click delegation for card buttons (Extract Ideas / Browse & Pick).
+    // Keeps the card builder lean and lets us re-render results without
+    // re-binding handlers.
+    grid.addEventListener('click', (ev) => {
+      const btnEl = ev.target.closest('button[data-act]');
+      if (!btnEl) return;
+      const card = btnEl.closest('.card');
+      if (!card) return;
+      const idx = parseInt(card.dataset.idx, 10);
+      const item = currentResults[idx];
+      if (!item) return;
+      if (btnEl.dataset.act === 'extract') {
+        extractIdeas(item, card, btnEl, { mode: 'panel' });
+      } else if (btnEl.dataset.act === 'pick') {
+        extractIdeas(item, card, btnEl, { mode: 'pick' });
+      }
+    });
+
+    // ── Extract flow ──────────────────────────────────────────────
+    let extractFlight = null;
+
+    async function extractIdeas(item, card, btnEl, { mode }) {
+      // mode: 'panel' (right rail) or 'pick' (modal with checkboxes).
+      // Both share the same /api/extract call and Google News fallback;
+      // they only differ in where the resulting items get rendered.
+      if (extractFlight) { try { extractFlight.abort(); } catch {} }
+      const controller = new AbortController();
+      extractFlight = controller;
+
+      // Mark this card as the active one in the grid.
+      document.querySelectorAll('.card.is-active').forEach(c => c.classList.remove('is-active'));
+      card.classList.add('is-active');
+
+      const labelEl = btnEl.querySelector('.label');
+      const originalLabel = labelEl ? labelEl.textContent : btnEl.textContent;
+      btnEl.disabled = true;
+      btnEl.classList.add('is-loading');
+      if (labelEl) labelEl.innerHTML = `<span class="spinner"></span>`;
+      else btnEl.innerHTML = `<span class="spinner"></span>`;
+
+      // Show loading in the right panel only when that's the destination.
+      if (mode === 'panel') {
+        ideasTitle.textContent = item.title || 'Extracting…';
+        ideasMeta.innerHTML = `<span class="spinner"></span> Asking Gemini for the ranked list…`;
+        ideasBody.innerHTML = `
+          <div class="text-ink-faint text-[13px] italic py-6 text-center">
+            Reading the article and extracting ranked ideas…
+          </div>`;
+      }
+
+      try {
+        const url = `${EXTRACT_URL}?url=${encodeURIComponent(item.link)}`;
+        const r = await fetch(url, { signal: controller.signal });
+        const data = await r.json().catch(() => ({}));
+
+        // Google News redirect → render the warning + paste-final-URL form
+        // INSIDE the right panel (always — even if the user clicked Pick),
+        // because the popup checkbox flow needs real items to populate.
+        if (data && data.error === 'google_news_redirect') {
+          renderGoogleNewsWarning(item, mode);
+          return;
+        }
+
+        if (!r.ok) {
+          throw new Error(data?.error || `Extract failed (HTTP ${r.status}).`);
+        }
+
+        const items = Array.isArray(data.items) ? data.items : [];
+        if (!items.length) {
+          const msg = data.error || 'No ranked list could be extracted from this article.';
+          if (mode === 'panel') {
+            ideasTitle.textContent = item.title || '';
+            ideasMeta.textContent = '';
+            ideasBody.innerHTML = `<div class="text-ink-faint text-[13px] italic py-6 text-center">${escapeHtml(msg)}</div>`;
+          } else {
+            showToast(msg);
+          }
+          return;
+        }
+
+        // Always populate the right panel as a record of the last extraction.
+        renderIdeasPanel(item, items, data.method || 'gemini');
+        if (mode === 'pick') {
+          openPickModal(item, items);
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        const msg = String(err.message || err);
+        if (mode === 'panel') {
+          ideasTitle.textContent = item.title || '';
+          ideasMeta.textContent = '';
+          ideasBody.innerHTML = `<div class="text-ink-faint text-[13px] italic py-6 text-center">${escapeHtml(msg)}</div>`;
+        } else {
+          showToast(msg);
+        }
+      } finally {
+        btnEl.disabled = false;
+        btnEl.classList.remove('is-loading');
+        if (labelEl) labelEl.textContent = originalLabel;
+        else btnEl.textContent = originalLabel;
+        extractFlight = null;
+      }
+    }
+
+    function resetIdeasPanel() {
+      ideasTitle.textContent = 'Pick an article to mine its ranked list';
+      ideasMeta.innerHTML = `Click <span class="text-ink-dim">Extract Ideas</span> on any card to see Gemini's ranked breakdown here.`;
+      ideasBody.innerHTML = `<div class="text-ink-faint text-[13px] italic py-6 text-center">No article selected yet.</div>`;
+    }
+
+    function renderIdeasPanel(item, items, method) {
+      ideasTitle.textContent = item.title || '';
+      const methodLabel = method === 'heuristic'
+        ? 'HTML pattern fallback'
+        : method === 'gemini' ? 'Gemini AI' : method;
+      ideasMeta.innerHTML = `${items.length} ideas · <span class="text-ink-dim">via ${escapeHtml(methodLabel)}</span> · <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener" class="text-gold hover:underline">source ↗</a>`;
+
+      const rows = items.map(it => `
+        <div class="idea-row">
+          <span class="idea-rank">${escapeHtml(String(it.rank ?? '·'))}</span>
+          <span class="idea-text">${escapeHtml(it.idea ?? '')}</span>
+        </div>
+      `).join('');
+      ideasBody.innerHTML = rows;
+    }
+
+    function renderGoogleNewsWarning(item, mode) {
+      // Two-step UX: open article in new tab → user copies the resolved
+      // publisher URL out of their address bar → paste here → press Enter
+      // to re-run extraction with that URL.
+      ideasTitle.textContent = item.title || 'Google News redirect';
+      ideasMeta.textContent = '';
+      ideasBody.innerHTML = `
+        <div class="gn-warning">
+          <h4>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            Google News redirect detected
+          </h4>
+          <p>
+            This link bounces through Google News before reaching the publisher, so the server can't fetch it directly.
+            Open it in your browser, wait for it to redirect to the real article, then copy that final URL and paste it below.
+          </p>
+          <a class="gn-link" href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer">
+            <span>Open article</span>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+          </a>
+          <div class="gn-input-row">
+            <input id="gn-final-url" type="url" class="gn-input" placeholder="Paste the final publisher URL and press Enter" autocomplete="off" />
+            <button type="button" class="btn-action btn-action--solid" id="gn-go">Extract</button>
+          </div>
+          <p id="gn-status" class="text-[11.5px] text-ink-faint mt-2" style="font-family: ui-monospace, 'SF Mono', monospace;"></p>
+        </div>
+        <div class="text-ink-faint text-[13px] italic py-6 text-center">Awaiting resolved URL…</div>
+      `;
+      const finalInput = document.getElementById('gn-final-url');
+      const goBtn = document.getElementById('gn-go');
+      const gnStatus = document.getElementById('gn-status');
+      if (finalInput) {
+        finalInput.focus();
+        finalInput.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter') { ev.preventDefault(); goBtn.click(); }
+        });
+      }
+      if (goBtn) {
+        goBtn.addEventListener('click', async () => {
+          const finalUrl = (finalInput.value || '').trim();
+          if (!finalUrl) { finalInput.focus(); return; }
+          if (!/^https?:\/\//i.test(finalUrl)) {
+            gnStatus.textContent = 'URL must start with http:// or https://';
+            return;
+          }
+          if (/news\.google\.com/i.test(finalUrl)) {
+            gnStatus.textContent = 'That is still a Google News URL. Wait for the redirect to complete first.';
+            return;
+          }
+          // Build a synthetic item with the user-supplied final URL and
+          // re-run the extract flow as if they'd clicked Extract Ideas.
+          gnStatus.innerHTML = `<span class="spinner"></span> Extracting from resolved URL…`;
+          goBtn.disabled = true;
+          try {
+            const r = await fetch(`${EXTRACT_URL}?url=${encodeURIComponent(finalUrl)}`);
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok || !Array.isArray(data.items) || !data.items.length) {
+              gnStatus.textContent = (data && data.error) || 'No ranked list could be extracted from that URL.';
+              goBtn.disabled = false;
+              return;
+            }
+            const synthItem = { title: data.title || item.title, link: finalUrl, source: item.source };
+            renderIdeasPanel(synthItem, data.items, data.method || 'gemini');
+            if (mode === 'pick') openPickModal(synthItem, data.items);
+          } catch (err) {
+            gnStatus.textContent = String(err.message || err);
+            goBtn.disabled = false;
+          }
+        });
+      }
+    }
+
+    // ── Browse & Pick modal ───────────────────────────────────────
+    function openPickModal(item, items) {
+      pickTitle.textContent = item.title || 'Select ideas';
+      pickBody.innerHTML = items.map((it, i) => `
+        <label class="pick-row">
+          <input type="checkbox" class="pick-checkbox" data-idx="${i}" checked />
+          <span class="pick-rank">${escapeHtml(String(it.rank ?? (i+1)))}</span>
+          <span class="pick-text">${escapeHtml(it.idea ?? '')}</span>
+        </label>
+      `).join('');
+      pickModal.classList.remove('hidden');
+      updatePickCount();
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePickModal() {
+      pickModal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function updatePickCount() {
+      const total = pickBody.querySelectorAll('.pick-checkbox').length;
+      const checked = pickBody.querySelectorAll('.pick-checkbox:checked').length;
+      pickCount.textContent = `${checked} of ${total} selected`;
+    }
+
+    pickBody.addEventListener('change', (ev) => {
+      if (ev.target.classList.contains('pick-checkbox')) updatePickCount();
+    });
+    $('pick-cancel').addEventListener('click', closePickModal);
+    $('pick-save').addEventListener('click', () => {
+      const picked = [...pickBody.querySelectorAll('.pick-checkbox:checked')]
+        .map(cb => pickBody.querySelectorAll('.pick-row')[parseInt(cb.dataset.idx, 10)])
+        .map(row => row.querySelector('.pick-text').textContent.trim());
+      if (!picked.length) {
+        showToast('Pick at least one idea, or hit Cancel.');
+        return;
+      }
+      // Copy the user's selections to the clipboard so they can drop the
+      // shortlist into Notion / a doc / wherever — this is the most
+      // generally useful "save" action without invented persistence.
+      navigator.clipboard.writeText(picked.map((t, i) => `${i+1}. ${t}`).join('\n'))
+        .then(() => showToast(`Copied ${picked.length} ideas to clipboard.`))
+        .catch(() => showToast(`Selected ${picked.length} ideas (clipboard blocked).`));
+      closePickModal();
+    });
+    pickModal.addEventListener('click', (ev) => {
+      if (ev.target === pickModal) closePickModal();
+    });
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape' && !pickModal.classList.contains('hidden')) closePickModal();
+    });
+
+    // Mobile menu toggle
+    (function () {
+      const btn = document.getElementById('hamburger');
+      const menu = document.getElementById('mobile-menu');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', () => {
+        const isHidden = menu.classList.contains('hidden');
+        menu.classList.toggle('hidden', !isHidden);
+        menu.classList.toggle('flex', isHidden);
+      });
+    })();
+
+    // Expose search() to the form's inline onsubmit
+    window.search = search;
+
+    // Auto-search if URL has ?q=... (also accept ?topic= for back-compat
+    // with the old endpoint's URL shape).
+    const params = new URLSearchParams(location.search);
+    const initial = params.get('q') || params.get('topic');
+    if (initial) {
+      topicEl.value = initial;
+      search();
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Moodboard — generate 6 homepage design concepts (Minimalist, Contemporary, Dynamic) from a single Idea, Theme, and Products. Concepts persist locally; designs export as standalone .html.">
+  <title>Moodboard · Concept Generator</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,500;1,9..144,700&family=Work+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            canvas:        '#0E0A03',
+            'canvas-elev': '#150E05',
+            'canvas-panel':'#1B1306',
+            ink:           '#f5ead6',
+            'ink-dim':     '#c9b882',
+            'ink-faint':   '#8B6F2E',
+            gold:          '#E6B979',
+            'gold-deep':   '#C6A559',
+            'gold-soft':   '#F0C990',
+            line:          'rgba(230, 185, 121, 0.18)',
+            'line-strong': 'rgba(230, 185, 121, 0.32)',
+          },
+          fontFamily: {
+            display: ['Fraunces', 'serif'],
+            body:    ['Work Sans', 'sans-serif'],
+            mono:    ['JetBrains Mono', 'monospace'],
+          },
+          letterSpacing: { wide2: '0.22em' },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html, body { background-color: #0E0A03; color: #f5ead6; }
+    body { font-family: 'Work Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 45% at 50% 18%, rgba(230, 185, 121, 0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 90% 90%, rgba(198, 165, 89, 0.05) 0%, transparent 65%);
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.05' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.92  0 0 0 0 0.84  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.45'/></svg>");
+      opacity: 0.06; mix-blend-mode: overlay;
+    }
+
+    .field-line { position: relative; }
+    .field-line input {
+      background: transparent; border: 0;
+      border-bottom: 1px solid rgba(230, 185, 121, 0.18);
+      width: 100%; padding: 0 0 10px 0;
+      transition: border-color 240ms cubic-bezier(.4,.14,.3,1);
+    }
+    .field-line input:focus { outline: none; border-bottom-color: rgba(230, 185, 121, 0.4); }
+    .field-line::after {
+      content: ''; position: absolute; left: 50%; bottom: 0;
+      width: 0; height: 1.5px;
+      background: linear-gradient(to right, transparent, #E6B979 50%, transparent);
+      transform: translateX(-50%);
+      transition: width 480ms cubic-bezier(.4,.14,.3,1);
+    }
+    .field-line:focus-within::after { width: 100%; }
+    input { caret-color: #E6B979; }
+
+    /* Custom animated placeholder — overlays the input when empty.
+       The track contains two identical copies of the text; CSS
+       animates translateX(-50%) so when one copy scrolls off the
+       left, the other is already in place: seamless continuous loop. */
+    .ph-marquee {
+      position: absolute;
+      left: 0; right: 0; top: 0; bottom: 10px;
+      pointer-events: none;
+      overflow: hidden;
+      transition: opacity 220ms ease;
+    }
+    .ph-track {
+      display: inline-flex;
+      white-space: nowrap;
+      animation: ph-scroll var(--ph-duration, 10s) linear infinite;
+      will-change: transform;
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 19px;
+      line-height: 1.25;
+      color: rgba(139, 111, 46, 0.55);
+    }
+    .ph-track > span { padding-right: 3em; }
+    .ph-marquee.is-paused .ph-track { animation-play-state: paused; }
+    @keyframes ph-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ph-track { animation: none; }
+    }
+
+    /* Value marquee — same seamless-loop trick for the typed value.
+       Layers over the input; input text goes transparent only while
+       marquee is active and the field isn't focused. */
+    .val-marquee {
+      position: absolute;
+      left: 0; right: 0; top: 0; bottom: 10px;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 220ms ease;
+    }
+    .val-marquee.is-active { opacity: 1; }
+    .val-track {
+      display: inline-flex;
+      white-space: nowrap;
+      animation: val-scroll var(--val-duration, 12s) linear infinite;
+      will-change: transform;
+      font-family: 'Fraunces', serif;
+      font-size: 19px;
+      line-height: 1.25;
+      color: #f5ead6;
+    }
+    .val-track > span { padding-right: 3em; }
+    .val-marquee.is-paused .val-track { animation-play-state: paused; }
+    @keyframes val-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .field-line.has-marquee input:not(:focus) { color: transparent; }
+    @media (prefers-reduced-motion: reduce) {
+      .val-track { animation: none; }
+    }
+
+    .hero-1 { font-family: 'Fraunces', serif; font-variation-settings: "opsz" 144; font-weight: 700; }
+    .hero-2 { font-family: 'Fraunces', serif; font-variation-settings: "opsz" 144; font-weight: 300; font-style: italic; }
+
+    @keyframes shimmer { 0% { background-position: -150% 0; } 100% { background-position: 250% 0; } }
+    .shimmer {
+      background: linear-gradient(105deg,
+        rgba(230,185,121,0.02) 0%,
+        rgba(230,185,121,0.10) 30%,
+        rgba(230,185,121,0.18) 50%,
+        rgba(230,185,121,0.10) 70%,
+        rgba(230,185,121,0.02) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2.4s linear infinite;
+    }
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+    .spin-slow { animation: spin-slow 1.6s linear infinite; }
+
+    @keyframes rise-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .reveal-1 { animation: rise-in 700ms cubic-bezier(.2,.6,.2,1) 80ms both; }
+    .reveal-2 { animation: rise-in 800ms cubic-bezier(.2,.6,.2,1) 200ms both; }
+    .reveal-3 { animation: rise-in 800ms cubic-bezier(.2,.6,.2,1) 360ms both; }
+    .reveal-4 { animation: rise-in 800ms cubic-bezier(.2,.6,.2,1) 540ms both; }
+
+    @keyframes print-in {
+      0%   { opacity: 0; transform: scale(1.03); filter: blur(6px) saturate(0.4); }
+      60%  { opacity: 1; }
+      100% { opacity: 1; transform: scale(1);     filter: blur(0)   saturate(1);   }
+    }
+    .print-in { animation: print-in 1100ms cubic-bezier(.2,.6,.2,1) both; }
+
+    .concept-card { transition: transform 320ms cubic-bezier(.2,.6,.2,1), box-shadow 320ms; }
+    .concept-card:hover { transform: translateY(-2px); box-shadow: 0 14px 40px -16px rgba(230, 185, 121, 0.22); }
+
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px; border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      border: 1px solid rgba(230, 185, 121, 0.28);
+    }
+    .badge-minimal     { color: #f5ead6; background: rgba(245, 234, 214, 0.05); border-color: rgba(245, 234, 214, 0.25); }
+    .badge-contemporary{ color: #F0C990; background: rgba(240, 201, 144, 0.08); border-color: rgba(240, 201, 144, 0.30); }
+    .badge-dynamic     { color: #E6B979; background: rgba(230, 185, 121, 0.10); border-color: rgba(230, 185, 121, 0.45); }
+
+    ::selection { background: rgba(230, 185, 121, 0.35); color: #fff; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+
+<body class="relative min-h-screen flex flex-col">
+
+  <header class="relative z-10 px-7 md:px-14 pt-9 pb-5 reveal-1">
+    <div class="flex items-center justify-between font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint">
+      <span>Tester.io / Moodboard</span>
+      <span class="hidden sm:inline">v.002 · Concept Generator · Nano-Banana</span>
+      <a href="/" class="hover:text-gold transition-colors">← Home</a>
+    </div>
+  </header>
+
+  <section class="relative z-10 px-7 md:px-14 pt-2 pb-10 md:pb-12">
+    <h1 class="leading-[0.85] tracking-tight text-ink reveal-2 select-none" style="font-size: clamp(64px, 12.5vw, 196px);">
+      <span class="hero-1">Mood</span><span class="hero-2 text-gold">board</span>
+    </h1>
+    <p class="mt-5 max-w-2xl text-[15.5px] text-ink-dim leading-relaxed reveal-3">
+      Compose an <span class="font-display italic text-ink">idea</span>, a <span class="font-display italic text-ink">theme</span>, and the <span class="font-display italic text-ink">products</span> inside it.
+      The atelier returns six full-page homepage concepts — two minimalist, two contemporary, two dynamic — each rendered front and back.
+      Every set is archived locally; favourites export as standalone <span class="font-mono text-ink">.html</span>.
+    </p>
+  </section>
+
+  <!-- ───────── COMPOSE ───────── -->
+  <section class="relative z-10 px-7 md:px-14 pb-10 reveal-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-8 max-w-5xl">
+
+      <label class="block">
+        <span class="block font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint mb-3">01 · Idea</span>
+        <div class="field-line">
+          <div class="ph-marquee" data-for="f-idea"><div class="ph-track"><span>A direct-to-door coffee ritual</span><span aria-hidden="true">A direct-to-door coffee ritual</span></div></div>
+          <div class="val-marquee" data-for="f-idea"><div class="val-track"></div></div>
+          <input id="f-idea" type="text" autocomplete="off" maxlength="180" placeholder=""
+            class="font-display text-[19px] text-ink"/>
+        </div>
+      </label>
+
+      <label class="block">
+        <span class="block font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint mb-3">02 · Theme</span>
+        <div class="field-line">
+          <div class="ph-marquee" data-for="f-theme"><div class="ph-track"><span>Editorial, warm, Scandinavian</span><span aria-hidden="true">Editorial, warm, Scandinavian</span></div></div>
+          <div class="val-marquee" data-for="f-theme"><div class="val-track"></div></div>
+          <input id="f-theme" type="text" autocomplete="off" maxlength="120" placeholder=""
+            class="font-display text-[19px] text-ink"/>
+        </div>
+      </label>
+
+      <label class="block">
+        <span class="block font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint mb-3">03 · Products</span>
+        <div class="field-line">
+          <div class="ph-marquee" data-for="f-products"><div class="ph-track"><span>Single-origin beans, ceramic dripper, brass kettle</span><span aria-hidden="true">Single-origin beans, ceramic dripper, brass kettle</span></div></div>
+          <div class="val-marquee" data-for="f-products"><div class="val-track"></div></div>
+          <input id="f-products" type="text" autocomplete="off" maxlength="180" placeholder=""
+            class="font-display text-[19px] text-ink"/>
+        </div>
+      </label>
+    </div>
+
+    <div class="mt-9 flex flex-wrap items-center gap-5">
+      <button id="generate-btn" type="button" disabled
+        class="group relative inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-gold text-canvas font-medium text-[13.5px] tracking-wide
+               disabled:bg-canvas-elev disabled:text-ink-faint disabled:cursor-not-allowed
+               enabled:hover:bg-gold-soft enabled:hover:shadow-[0_10px_36px_-12px_rgba(230,185,121,0.55)]
+               active:translate-y-px transition-all duration-200
+               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas">
+        <span id="generate-btn-label">Generate Now</span>
+        <svg class="w-3.5 h-3.5 transition-transform duration-200 group-enabled:group-hover:translate-x-0.5"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+
+      <span id="status-line" class="font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint">awaiting input</span>
+    </div>
+    <p id="form-error" class="hidden mt-4 font-display italic text-[13.5px] text-red-300/80 leading-relaxed"></p>
+  </section>
+
+  <!-- ───────── MOODBOARD ───────── -->
+  <main class="relative z-10 flex-1 px-7 md:px-14 pb-12">
+
+    <div id="moodboard-empty" class="border border-line rounded-[2px] py-16 px-10 text-center max-w-3xl mx-auto">
+      <p class="font-display italic text-[20px] text-ink-dim leading-snug">No concepts on the wall yet</p>
+      <p class="mt-3 font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint">Fill the three fields above and hit Generate Now</p>
+    </div>
+
+    <div id="moodboard" class="hidden">
+      <div class="flex items-end justify-between mb-7 gap-6 flex-wrap">
+        <div>
+          <h2 class="font-display text-[30px] md:text-[34px] text-ink leading-none">Concepts</h2>
+          <p id="moodboard-meta" class="mt-1.5 font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint">—</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <button id="regenerate-all-btn" type="button"
+            class="font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint hover:text-gold transition-colors">
+            ↻ Regenerate all
+          </button>
+          <button id="export-set-btn" type="button"
+            class="font-mono text-[10.5px] font-medium uppercase tracking-wide2 text-canvas bg-gold hover:bg-gold-soft active:translate-y-px transition-colors px-4 py-2 rounded-full">
+            ⤓ Download All Designs
+          </button>
+        </div>
+      </div>
+
+      <div id="concepts-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- 6 concept cards inserted by JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- ───────── ARCHIVE ───────── -->
+  <section class="relative z-10 px-7 md:px-14 pb-14">
+    <div class="border-t border-line pt-8">
+      <div class="flex items-end justify-between mb-6 gap-4 flex-wrap">
+        <div>
+          <h2 class="font-display text-[26px] md:text-[28px] text-ink leading-none">Archive</h2>
+          <p class="mt-1.5 font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint">All sets persist locally — survives refresh</p>
+        </div>
+        <button id="clear-archive" class="hidden font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint hover:text-red-300/80 transition-colors">
+          Clear archive
+        </button>
+      </div>
+
+      <div id="archive-empty" class="font-display italic text-[15px] text-ink-dim/80">
+        No archived sets yet — your generations will collect here.
+      </div>
+
+      <div id="archive-grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- archived sets inserted by JS -->
+      </div>
+    </div>
+  </section>
+
+  <footer class="relative z-10 mt-auto px-7 md:px-14 py-6 border-t border-line/60">
+    <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-[10.5px] uppercase tracking-wide2 text-ink-faint">
+      <span>Atelier · MMXXVI</span>
+      <span id="footer-counter">0 sets · 0 prints</span>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+
+    const STORAGE_KEY = 'frontend.archive.v2';
+
+    // ────────────────────────────────────────────────────────────────
+    // Concept templates — 2 Minimalist, 2 Contemporary, 2 Dynamic.
+    // Each builds a homepage UI mockup prompt (front) and an inner
+    // section UI mockup prompt (back) from the user's idea/theme/products.
+    // Prompts are intentionally short and concrete — Gemini rejects
+    // overly abstract prompts.
+    // ────────────────────────────────────────────────────────────────
+    const CONCEPTS = [
+      {
+        category: 'Minimalist',
+        name: 'Stillpoint',
+        description: 'Whitespace-forward editorial. Thin serif headline, restrained palette, single product anchor.',
+        style: 'extremely minimalist editorial web design — the page is mostly empty. Off-white background, near-black thin serif type, a single hairline accent. Restrained two-tone palette only. Visual hierarchy is one big headline plus one small product — nothing else. Quiet, restrained, and SPARSE.',
+        front: 'a very sparse homepage. Top: a tiny sans-serif logotype on the far left, a single small "Shop" link on the far right (NO multi-link nav, NO menu, NO buttons besides this one). Middle: large empty whitespace with one oversized thin serif headline left-aligned (one or two short words). Lower third: one small centered product photograph above a hairline horizontal rule and a single tiny "View" link. NO hero photograph, NO product grid, NO multiple sections, NO cards, NO magazine layout, NO color blocks. The page must be at least 60 percent empty whitespace.',
+      },
+      {
+        category: 'Minimalist',
+        name: 'Margin Note',
+        description: 'Asymmetric typographic essay. The brand voice on one side, a single product on the other.',
+        style: 'minimalist asymmetric web design that reads like a quiet printed page. Cream background, deep brown thin serif type, one rust accent. Severely restrained — the design power comes from generous empty margins, not from elements. SPARSE and QUIET.',
+        front: 'a strict two-column homepage that fills the whole canvas. Left column (about 55 percent width): a thin serif logotype top-left, a two-line italic tagline mid-column, and three tiny footer-style links at the very bottom — the rest of the column is empty cream space. Right column (about 45 percent width): a single centered product still life photograph (one product only), small and floating in whitespace. NO product grid, NO hero photograph filling the page, NO additional sections, NO magazine-cover layout, NO multiple images stacked, NO color blocks. Cream background everywhere. The page must be at least 50 percent empty whitespace.',
+      },
+      {
+        category: 'Contemporary',
+        name: 'Spectrum',
+        description: 'Bold sans-serif headline, modern card grid, one striking accent color cutting through the page.',
+        style: 'contemporary modern web design with crisp white background, near-black sans-serif type, vivid coral accent #ff5a3c, structured grid with sharp corners',
+        front: 'bold horizontal nav with 4 links on white, oversized geometric sans-serif hero headline filling most of the width, sharp coral CTA button, three product cards in a row beneath the hero each with a clean product photograph and short label',
+        back: 'product detail page UI: large left-side product photograph, right-side bold sans-serif product name, structured spec list with thin dividers, vivid coral Add-to-cart button, subtle quantity stepper',
+      },
+      {
+        category: 'Contemporary',
+        name: 'Pavilion',
+        description: 'Soft warm gradient hero. Layered cards with refined shadows, mixed serif and sans pairing.',
+        style: 'contemporary refined warm web design with soft peach-to-cream gradient backgrounds, deep burgundy text, sand accents, layered cards with soft drop shadows',
+        front: 'homepage with peach-to-cream gradient hero, large mixed display-serif headline, a soft sand pill CTA button, below the fold a row of three layered floating product cards each with rounded corners and soft shadow on a sand panel',
+        back: 'product collection page on sand background, four-column grid of layered cards each featuring a product photograph with soft shadow, mixed serif headings and sans body text, breadcrumb navigation across the top',
+      },
+      {
+        category: 'Dynamic',
+        name: 'Velocity',
+        description: 'Full-bleed black hero, oversized condensed display type, an electric accent breaking the grid.',
+        style: 'dynamic high-contrast web design with deep black background, white type, electric yellow accent #f4ff00, oversized heavy condensed sans-serif display, kinetic off-grid composition',
+        front: 'full-bleed black homepage with oversized white heavy condensed sans-serif headline broken across multiple lines, one word highlighted in electric yellow, tilted product photograph in lower-right quadrant breaking the grid, top nav with a small white logo and minimal links',
+        back: 'editorial spread on black background with massive heavy condensed sans-serif headline, one large product photograph with a diagonal crop, electric yellow callouts and arrow lines pointing to product features, tight layout',
+      },
+      {
+        category: 'Dynamic',
+        name: 'Apex',
+        description: 'Magazine-cover energy. Color-blocked sections, a hero shot at scale, bold uppercase display type.',
+        style: 'dynamic maximalist magazine-cover web design with saturated red, deep cobalt blue, and warm cream, oversized uppercase display headlines, color-blocked sections',
+        front: 'magazine-cover homepage with full-bleed dramatic hero photograph of products taking 70 percent of the viewport, oversized uppercase display heading layered on top in saturated red, supporting sans-serif tag lines in white and cream as cover callouts, below the fold a high-contrast cobalt section with white text',
+        back: 'multi-column editorial article web layout with a large left-side product photograph and a right column of dense magazine-style article copy, saturated red drop cap, decorative pull-quotes in cobalt boxes, on warm cream background',
+      },
+    ];
+
+    function buildFrontPrompt(c, idea, theme, products) {
+      return [
+        `A WEBSITE HOMEPAGE UI MOCKUP — render as if it's a screenshot of a real designed website seen in a desktop browser.`,
+        `It MUST look like an actual web page (realistic web layout proportions, real interface elements like nav, headlines, buttons) — NOT a moodboard, NOT a flat-lay, NOT a fashion photograph, NOT a magazine spread, NOT a color swatch sheet.`,
+        `Concept: "${idea}".`,
+        `Design style (follow this carefully — it sets the density and feel): ${c.style}.`,
+        `Layout (follow this literally — render exactly the elements described, in the described proportions, do NOT add extra sections, hero photographs, product grids, or magazine-style blocks that are not explicitly described): ${c.front}.`,
+        `Theme/aesthetic from the brief: ${theme}.`,
+        `Featured products on the page: ${products}.`,
+        `Crisp UI typography, structured grid where the layout calls for one, generous whitespace where the layout calls for it. 3:4 portrait orientation, sharp focus, high-quality mockup. No watermarks, no readable text — use placeholder/lorem-style copy only.`,
+      ].join(' ');
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // DOM
+    // ────────────────────────────────────────────────────────────────
+    const $ = (id) => document.getElementById(id);
+    const ideaEl     = $('f-idea');
+    const themeEl    = $('f-theme');
+    const productsEl = $('f-products');
+    const btn        = $('generate-btn');
+    const btnLabel   = $('generate-btn-label');
+    const statusLine = $('status-line');
+    const formError  = $('form-error');
+
+    const moodboardEmpty = $('moodboard-empty');
+    const moodboard      = $('moodboard');
+    const moodboardMeta  = $('moodboard-meta');
+    const conceptsGrid   = $('concepts-grid');
+    const regenAllBtn    = $('regenerate-all-btn');
+    const exportSetBtn   = $('export-set-btn');
+
+    const archiveEmpty = $('archive-empty');
+    const archiveGrid  = $('archive-grid');
+    const clearArchive = $('clear-archive');
+    const counter      = $('footer-counter');
+
+    // ────────────────────────────────────────────────────────────────
+    // Persistence
+    // ────────────────────────────────────────────────────────────────
+    function loadArchive() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      } catch { return []; }
+    }
+    function saveArchive(arr) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+      catch (err) { console.warn('localStorage write failed:', err); }
+    }
+    let archive = loadArchive();
+    let activeSet = archive[0] || null; // most recent set
+
+    // ────────────────────────────────────────────────────────────────
+    // Rendering helpers
+    // ────────────────────────────────────────────────────────────────
+    function escapeHtml(s) {
+      return String(s ?? '')
+        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+        .replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    }
+    function relTime(iso) {
+      const ms = Date.now() - new Date(iso).getTime();
+      const m = Math.floor(ms / 60000);
+      if (m < 1)  return 'just now';
+      if (m < 60) return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ago`;
+      const d = Math.floor(h / 24);
+      if (d < 7)  return `${d}d ago`;
+      return new Date(iso).toLocaleDateString(undefined, { month:'short', day:'numeric' });
+    }
+    function badgeClass(category) {
+      if (category === 'Minimalist')    return 'badge badge-minimal';
+      if (category === 'Contemporary')  return 'badge badge-contemporary';
+      return 'badge badge-dynamic';
+    }
+    function updateCounter() {
+      const sets   = archive.length;
+      const prints = archive.reduce((n, s) => n + (s.concepts?.reduce((m,c) => m + (c.frontUrl ? 1 : 0) + (c.backUrl ? 1 : 0), 0) || 0), 0);
+      counter.textContent = `${sets} ${sets===1?'set':'sets'} · ${prints} ${prints===1?'print':'prints'}`;
+    }
+
+    function imageSlot(side, concept, idx) {
+      const url = concept[side + 'Url'];
+      const status = concept[side + 'Status'] || 'idle';
+      const label = side === 'front' ? 'Homepage' : 'Inner';
+      const slotId = `slot-${idx}-${side}`;
+      let inner;
+      if (status === 'loading') {
+        inner = `<div class="absolute inset-0 shimmer"></div>
+                 <div class="absolute inset-0 flex items-center justify-center">
+                   <div class="w-7 h-7 rounded-full border border-gold/20 border-t-gold spin-slow"></div>
+                 </div>`;
+      } else if (status === 'error') {
+        inner = `<div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                   <p class="font-mono text-[9.5px] uppercase tracking-wide2 text-red-300/70 mb-1.5">render failed</p>
+                   <p class="font-display italic text-[12px] text-ink-dim leading-snug">${escapeHtml(concept[side + 'Error'] || 'try regenerating')}</p>
+                 </div>`;
+      } else if (url) {
+        inner = `<img src="${escapeHtml(url)}" alt="${escapeHtml(concept.name + ' — ' + label)}" class="absolute inset-0 w-full h-full object-cover print-in"/>`;
+      } else {
+        inner = `<div class="absolute inset-0 flex items-center justify-center">
+                   <p class="font-mono text-[9.5px] uppercase tracking-wide2 text-ink-faint">${label}</p>
+                 </div>`;
+      }
+      return `<div id="${slotId}" class="relative aspect-[3/4] bg-canvas-elev border border-line rounded-[2px] overflow-hidden">
+                ${inner}
+                <div class="absolute top-2 left-2 font-mono text-[9px] uppercase tracking-wide2 text-gold/85 bg-canvas/55 backdrop-blur-sm px-1.5 py-0.5 rounded-sm">${label}</div>
+              </div>`;
+    }
+
+    function renderConceptCard(concept, idx, total) {
+      const indexNum = String(idx + 1).padStart(2, '0');
+      const card = document.createElement('article');
+      card.className = 'concept-card relative bg-canvas-elev/60 border border-line rounded-[2px] p-5 sm:p-6';
+      card.dataset.idx = String(idx);
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-4 mb-5">
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="font-mono text-[10.5px] tracking-wide2 text-ink-faint">${indexNum} / ${String(total).padStart(2,'0')}</span>
+            <span class="${badgeClass(concept.category)}">${concept.category}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="js-regen font-mono text-[10px] uppercase tracking-wide2 text-ink-faint hover:text-gold transition-colors">↻ Regenerate</button>
+            <button class="js-export font-mono text-[10.5px] font-medium uppercase tracking-wide2 text-canvas bg-gold hover:bg-gold-soft active:translate-y-px transition-colors px-3 py-1.5 rounded-full">⤓ Download Design</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,260px)_1fr] gap-5 sm:gap-7 items-start">
+          <div>
+            ${imageSlot('front', concept, idx)}
+          </div>
+          <div class="flex flex-col min-w-0">
+            <h3 class="font-display text-[26px] sm:text-[30px] text-ink leading-tight">${escapeHtml(concept.name)}</h3>
+            <p class="mt-2 text-[13.5px] text-ink-dim leading-relaxed">${escapeHtml(concept.description)}</p>
+            <div class="mt-4 text-[10.5px] text-ink-faint/85 font-mono leading-relaxed">
+              <details class="cursor-pointer">
+                <summary class="hover:text-gold transition-colors">Image prompt</summary>
+                <textarea class="js-prompt mt-2 w-full bg-canvas-elev/70 border border-line rounded-sm px-3 py-2 normal-case font-body text-[12px] text-ink leading-relaxed resize-y focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/25 transition-colors" data-side="front" rows="7" spellcheck="false">${escapeHtml(concept.frontPrompt || '')}</textarea>
+                <div class="mt-2">
+                  <span class="font-mono text-[9.5px] text-ink-faint/70 italic normal-case">edits auto-save — click ↻ Regenerate above to apply</span>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      `;
+      card.querySelector('.js-regen').addEventListener('click', () => regenerateConcept(idx));
+      card.querySelector('.js-export').addEventListener('click', () => exportConceptHtml(concept, activeSet));
+
+      // Live-edit prompt: typing auto-saves to localStorage so the
+      // change persists even if the user refreshes before regenerating.
+      card.querySelectorAll('.js-prompt').forEach(ta => {
+        ta.addEventListener('input', () => {
+          activeSet.concepts[idx].frontPrompt = ta.value;
+          saveArchive(archive);
+        });
+        // Stop click on the textarea from collapsing the parent <details>
+        ta.addEventListener('click', (e) => e.stopPropagation());
+      });
+      return card;
+    }
+
+    function renderMoodboard() {
+      if (!activeSet) {
+        moodboard.classList.add('hidden');
+        moodboardEmpty.classList.remove('hidden');
+        return;
+      }
+      moodboardEmpty.classList.add('hidden');
+      moodboard.classList.remove('hidden');
+      moodboardMeta.textContent =
+        `${escapeHtml(activeSet.inputs.idea)} · ${escapeHtml(activeSet.inputs.theme)} · ${escapeHtml(activeSet.inputs.products)} · ${relTime(activeSet.createdAt)}`;
+      conceptsGrid.innerHTML = '';
+      activeSet.concepts.forEach((c, i) => conceptsGrid.appendChild(renderConceptCard(c, i, activeSet.concepts.length)));
+    }
+
+    function renderArchive() {
+      updateCounter();
+      if (!archive.length) {
+        archiveEmpty.classList.remove('hidden');
+        archiveGrid.classList.add('hidden');
+        clearArchive.classList.add('hidden');
+        return;
+      }
+      archiveEmpty.classList.add('hidden');
+      archiveGrid.classList.remove('hidden');
+      clearArchive.classList.remove('hidden');
+
+      archiveGrid.innerHTML = '';
+      archive.forEach((s, idx) => {
+        const isActive = activeSet && s.id === activeSet.id;
+        // Use any available image as the thumbnail — prefer fronts, fall
+        // back to backs. So a set is only "thumbless" when it has zero
+        // rendered images at all (e.g. all generations are still in
+        // flight or all 12 failed).
+        let thumb = '';
+        for (const c of s.concepts) { if (c.frontUrl) { thumb = c.frontUrl; break; } }
+        if (!thumb) for (const c of s.concepts) { if (c.backUrl) { thumb = c.backUrl; break; } }
+
+        const total = s.concepts.length * 2;
+        const ok = s.concepts.reduce((n, c) => n + (c.frontUrl ? 1 : 0) + (c.backUrl ? 1 : 0), 0);
+        const anyLoading = s.concepts.some(c => c.frontStatus === 'loading' || c.backStatus === 'loading');
+        const placeholder = anyLoading ? `rendering · ${ok}/${total}` : (ok === 0 ? `0/${total} — click to retry` : `${ok}/${total} prints`);
+
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = `concept-card text-left relative w-full bg-canvas-elev/60 border ${isActive ? 'border-gold/45' : 'border-line'} rounded-[2px] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40`;
+        card.innerHTML = `
+          <div class="aspect-[16/10] relative bg-canvas-elev overflow-hidden">
+            ${thumb
+              ? `<img src="${escapeHtml(thumb)}" class="absolute inset-0 w-full h-full object-cover" alt=""/>`
+              : `<div class="absolute inset-0 flex items-center justify-center font-mono text-[10px] uppercase tracking-wide2 text-ink-faint px-3 text-center">${escapeHtml(placeholder)}</div>`}
+            <div class="absolute inset-0 bg-gradient-to-t from-canvas/95 via-canvas/40 to-transparent"></div>
+            <div class="absolute top-2 left-2 font-mono text-[9.5px] uppercase tracking-wide2 text-gold/90">#${String(archive.length - idx).padStart(3,'0')}</div>
+          </div>
+          <div class="p-4">
+            <p class="font-display text-[15px] text-ink leading-snug truncate">${escapeHtml(s.inputs.idea)}</p>
+            <p class="mt-1 font-mono text-[10px] uppercase tracking-wide2 text-ink-faint truncate">${escapeHtml(s.inputs.theme)} · ${relTime(s.createdAt)}</p>
+          </div>
+        `;
+        card.addEventListener('click', () => { activeSet = s; renderMoodboard(); renderArchive(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        archiveGrid.appendChild(card);
+      });
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // Generation
+    // ────────────────────────────────────────────────────────────────
+    function setSlot(idx, side, patch) {
+      Object.assign(activeSet.concepts[idx], patch);
+      saveArchive(archive);
+      renderMoodboard();
+      renderArchive();
+    }
+
+    async function callApi(prompt) {
+      const res = await fetch('/api/generate-image', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.imageUrl) throw new Error(data?.error || `HTTP ${res.status}`);
+      return data.imageUrl;
+    }
+
+    async function generateOne(idx, side) {
+      const c = activeSet.concepts[idx];
+      const prompt = c[side + 'Prompt'];
+      setSlot(idx, side, { [side + 'Status']: 'loading', [side + 'Error']: null, [side + 'Url']: null });
+      try {
+        const url = await callApi(prompt);
+        setSlot(idx, side, { [side + 'Status']: 'done', [side + 'Url']: url });
+      } catch (err) {
+        setSlot(idx, side, { [side + 'Status']: 'error', [side + 'Error']: err.message });
+      }
+    }
+
+    async function regenerateConcept(idx) {
+      if (!activeSet) return;
+      await generateOne(idx, 'front');
+    }
+
+    async function generateSet() {
+      // Fan out all 6 in parallel; settle independently so partial failures still render.
+      const tasks = [];
+      for (let i = 0; i < activeSet.concepts.length; i++) {
+        tasks.push(generateOne(i, 'front'));
+      }
+      await Promise.allSettled(tasks);
+    }
+
+    function makeSet(inputs) {
+      return {
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+        inputs,
+        concepts: CONCEPTS.map(c => ({
+          category: c.category,
+          name: c.name,
+          description: c.description,
+          frontPrompt: buildFrontPrompt(c, inputs.idea, inputs.theme, inputs.products),
+          frontUrl: null,
+          frontStatus: 'idle',
+          frontError: null,
+        })),
+      };
+    }
+
+    btn.addEventListener('click', async () => {
+      const inputs = {
+        idea:     ideaEl.value.trim(),
+        theme:    themeEl.value.trim(),
+        products: productsEl.value.trim(),
+      };
+      if (!inputs.idea || !inputs.theme || !inputs.products) return;
+
+      btn.disabled = true;
+      btnLabel.textContent = 'Working…';
+      statusLine.textContent = 'rendering 12 prints in parallel · 30–90s';
+      formError.classList.add('hidden');
+
+      const set = makeSet(inputs);
+      archive.unshift(set);
+      if (archive.length > 12) archive = archive.slice(0, 12);
+      activeSet = set;
+      saveArchive(archive);
+      renderMoodboard();
+      renderArchive();
+
+      try {
+        await generateSet();
+        const ok    = activeSet.concepts.reduce((n,c) => n + (c.frontUrl?1:0) + (c.backUrl?1:0), 0);
+        const total = activeSet.concepts.length * 2;
+        statusLine.textContent = ok === total ? 'set complete · archived' : `${ok}/${total} rendered · regenerate any failed cards`;
+      } catch (err) {
+        statusLine.textContent = 'error · see card states';
+        formError.textContent = err.message || String(err);
+        formError.classList.remove('hidden');
+      } finally {
+        btnLabel.textContent = 'Generate Now';
+        updateButton();
+      }
+    });
+
+    regenAllBtn.addEventListener('click', async () => {
+      if (!activeSet) return;
+      regenAllBtn.disabled = true;
+      statusLine.textContent = 're-rendering full set · 30–90s';
+      try { await generateSet(); statusLine.textContent = 'set complete · archived'; }
+      finally { regenAllBtn.disabled = false; }
+    });
+
+    exportSetBtn.addEventListener('click', () => {
+      if (!activeSet) return;
+      exportSetHtml(activeSet);
+    });
+
+    clearArchive.addEventListener('click', () => {
+      if (!archive.length) return;
+      if (!confirm(`Clear all ${archive.length} archived sets? This cannot be undone.`)) return;
+      archive = []; activeSet = null;
+      saveArchive(archive);
+      renderArchive(); renderMoodboard();
+      statusLine.textContent = 'archive cleared';
+    });
+
+    // ────────────────────────────────────────────────────────────────
+    // Form state
+    // ────────────────────────────────────────────────────────────────
+    function updateButton() {
+      const ok = !!(ideaEl.value.trim() && themeEl.value.trim() && productsEl.value.trim());
+      btn.disabled = !ok;
+      if (statusLine.textContent === 'awaiting input' || !ok) {
+        statusLine.textContent = ok ? 'ready · enter to generate' : 'awaiting input';
+      }
+      formError.classList.add('hidden');
+    }
+    [ideaEl, themeEl, productsEl].forEach(el => {
+      el.addEventListener('input', updateButton);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !btn.disabled) { e.preventDefault(); btn.click(); }
+      });
+    });
+
+    // ────────────────────────────────────────────────────────────────
+    // Marquee-style auto-scroll for overflowing input values. When a
+    // typed value is wider than the input box AND the input isn't being
+    // edited or hovered, smoothly pan scrollLeft back and forth so the
+    // full text becomes readable. Pauses for ~800ms at each end. Held
+    // still while focused (so the cursor stays put while typing) and
+    // while hovered (so the user can scroll manually if they prefer).
+    // Respects prefers-reduced-motion.
+    // ────────────────────────────────────────────────────────────────
+    // Value marquee — same seamless-loop approach as the placeholder.
+    // We can't duplicate text inside an <input>, so we layer a separate
+    // .val-marquee div above the field, populate it with two copies of
+    // the input's current value, and animate via CSS translateX. The
+    // input becomes color:transparent ONLY while marquee is active and
+    // unfocused, so editing/focus stays uninterrupted.
+    function setupValueMarquee(input) {
+      const marquee = document.querySelector(`.val-marquee[data-for="${input.id}"]`);
+      if (!marquee) return;
+      const track = marquee.querySelector('.val-track');
+      const wrap  = input.closest('.field-line');
+      const SPEED = 45; // px/sec — a bit slower than the 70 placeholder speed
+
+      function rebuildTrack() {
+        track.textContent = '';
+        if (!input.value) return;
+        const a = document.createElement('span');
+        const b = document.createElement('span');
+        a.textContent = b.textContent = input.value;
+        b.setAttribute('aria-hidden', 'true');
+        track.appendChild(a);
+        track.appendChild(b);
+        const oneWidth = a.offsetWidth + parseFloat(getComputedStyle(a).paddingRight || 0);
+        if (oneWidth > 0) marquee.style.setProperty('--val-duration', (oneWidth / SPEED) + 's');
+      }
+
+      function update() {
+        const focused = document.activeElement === input;
+        const hasVal  = !!input.value;
+        if (focused || !hasVal) {
+          marquee.classList.remove('is-active');
+          wrap.classList.remove('has-marquee');
+          return;
+        }
+        rebuildTrack();
+        // After layout settles, decide if we actually need to animate
+        requestAnimationFrame(() => {
+          const span = track.firstElementChild;
+          if (!span) {
+            marquee.classList.remove('is-active');
+            wrap.classList.remove('has-marquee');
+            return;
+          }
+          const fits = span.offsetWidth <= input.clientWidth;
+          if (fits) {
+            // Value is short enough — show the input itself, no marquee
+            marquee.classList.remove('is-active');
+            wrap.classList.remove('has-marquee');
+          } else {
+            marquee.classList.add('is-active');
+            wrap.classList.add('has-marquee');
+          }
+        });
+      }
+
+      input.addEventListener('input', update);
+      input.addEventListener('focus', update);
+      input.addEventListener('blur',  update);
+      input.addEventListener('mouseenter', () => marquee.classList.add('is-paused'));
+      input.addEventListener('mouseleave', () => marquee.classList.remove('is-paused'));
+      // Catch programmatic value changes (seed loader sets .value directly)
+      setInterval(update, 300);
+      window.addEventListener('resize', update);
+      update();
+    }
+    [ideaEl, themeEl, productsEl].forEach(setupValueMarquee);
+
+    // Placeholder marquee — overlays the input with example text that
+    // auto-scrolls horizontally when the example doesn't fit. Hides
+    // instantly when the input has a value or gains focus.
+    // CSS-driven seamless loop. JS only sets the per-track duration
+    // (so all three tracks share the same visual speed regardless of
+    // text length) and toggles visibility / pause based on input state.
+    function setupPlaceholderMarquee(input) {
+      const marquee = document.querySelector(`.ph-marquee[data-for="${input.id}"]`);
+      if (!marquee) return;
+      const track = marquee.querySelector('.ph-track');
+      const SPEED = 55; // px/sec — relaxed pace for the placeholder ticker
+
+      function setDuration() {
+        const span = track.firstElementChild;
+        if (!span) return;
+        const w = span.offsetWidth + parseFloat(getComputedStyle(span).paddingRight || 0);
+        if (w > 0) marquee.style.setProperty('--ph-duration', (w / SPEED) + 's');
+      }
+      setDuration();
+      window.addEventListener('resize', setDuration);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(setDuration);
+
+      let visible = null;
+      function update() {
+        const shouldShow = !input.value && document.activeElement !== input;
+        if (shouldShow !== visible) {
+          visible = shouldShow;
+          marquee.style.opacity = shouldShow ? '1' : '0';
+        }
+      }
+      input.addEventListener('input', update);
+      input.addEventListener('focus', update);
+      input.addEventListener('blur',  update);
+      input.addEventListener('mouseenter', () => marquee.classList.add('is-paused'));
+      input.addEventListener('mouseleave', () => marquee.classList.remove('is-paused'));
+      // Programmatic value changes (e.g. seed loader) won't fire input
+      // events, so re-check visibility on a slow interval.
+      setInterval(update, 300);
+      update();
+    }
+    [ideaEl, themeEl, productsEl].forEach(setupPlaceholderMarquee);
+
+    // ────────────────────────────────────────────────────────────────
+    // .html export — self-contained, atelier-styled portfolio sheet
+    // ────────────────────────────────────────────────────────────────
+    function exportConceptHtml(concept, set) {
+      const html = renderConceptHtml(concept, set);
+      downloadFile(`moodboard-${slug(concept.name)}-${slug(set.inputs.idea)}.html`, html);
+    }
+    function exportSetHtml(set) {
+      const html = renderSetHtml(set);
+      downloadFile(`moodboard-set-${slug(set.inputs.idea)}.html`, html);
+    }
+    function slug(s) {
+      return String(s || 'untitled').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'untitled';
+    }
+    function downloadFile(filename, content) {
+      const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
+    }
+
+    function styleBlock() {
+      // Inlined so the export is fully self-contained (besides remote images).
+      return `
+        :root { --canvas:#0E0A03; --elev:#150E05; --ink:#f5ead6; --dim:#c9b882; --faint:#8B6F2E; --gold:#E6B979; --line:rgba(230,185,121,0.18); }
+        *,*::before,*::after { box-sizing: border-box; }
+        html,body { margin:0; padding:0; background: var(--canvas); color: var(--ink); font-family: 'Work Sans', -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+        body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0; background: radial-gradient(ellipse 70% 45% at 50% 18%, rgba(230,185,121,0.10) 0%, transparent 60%), radial-gradient(ellipse 50% 40% at 90% 90%, rgba(198,165,89,0.05) 0%, transparent 65%); }
+        .wrap { position:relative; z-index:1; max-width: 1180px; margin: 0 auto; padding: 56px 28px 80px; }
+        .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--faint); }
+        h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(48px, 8vw, 96px); line-height: 0.92; letter-spacing: -0.02em; margin: 24px 0 8px; color: var(--ink); }
+        h1 em { font-weight: 300; font-style: italic; color: var(--gold); }
+        .lede { color: var(--dim); font-size: 16px; line-height: 1.6; max-width: 720px; }
+        .badge { display:inline-block; padding: 4px 10px; border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase; border: 1px solid rgba(230,185,121,0.3); margin-right: 8px; color: var(--ink); }
+        .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint); }
+        .concept { border-top: 1px solid var(--line); padding: 36px 0; }
+        .concept-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 18px; margin-bottom: 18px; }
+        .concept-head h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(28px, 4vw, 38px); margin: 0; line-height: 1.05; color: var(--ink); }
+        .concept-desc { color: var(--dim); font-size: 14.5px; line-height: 1.6; max-width: 640px; margin: 0 0 24px; }
+        .imgsolo { max-width: 360px; }
+        .imgsolo figure { margin: 0; position: relative; aspect-ratio: 3/4; overflow: hidden; background: var(--elev); border: 1px solid var(--line); border-radius: 2px; }
+        .imgsolo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .prompts { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .prompts h4 { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--faint); margin: 0 0 8px; }
+        .prompts p { font-size: 13px; line-height: 1.65; color: var(--dim); margin: 0; }
+        footer { margin-top: 60px; padding-top: 18px; border-top: 1px solid var(--line); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--faint); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        @media (max-width: 640px) { .imgrow, .prompts { grid-template-columns: 1fr; } }
+      `;
+    }
+
+    function fontLink() {
+      return `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,300&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">`;
+    }
+
+    function renderConceptHtml(concept, set) {
+      const safe = (s) => escapeHtml(s);
+      const figure = (url) => url
+        ? `<figure><img src="${safe(url)}" alt="${safe(concept.name)} homepage"/></figure>`
+        : `<figure></figure>`;
+      return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${safe(concept.name)} — ${safe(set.inputs.idea)}</title>${fontLink()}<style>${styleBlock()}</style></head><body><div class="wrap">
+        <div class="eyebrow">Moodboard / Concept Sheet · ${safe(set.inputs.idea)}</div>
+        <h1>${safe(concept.name)} <em>·</em> <em style="font-size:0.55em;font-style:italic;color:var(--ink)">${safe(concept.category)}</em></h1>
+        <p class="lede">${safe(concept.description)}</p>
+        <div class="meta" style="margin-top:14px">${safe(set.inputs.idea)} · ${safe(set.inputs.theme)} · ${safe(set.inputs.products)}</div>
+        <section class="concept">
+          <div class="imgsolo">${figure(concept.frontUrl)}</div>
+          <div class="prompts" style="grid-template-columns: 1fr"><div><h4>Prompt</h4><p>${safe(concept.frontPrompt)}</p></div></div>
+        </section>
+        <footer><span>Moodboard · Atelier · ${new Date(set.createdAt).toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'})}</span><span>Concept · ${safe(concept.category)}</span></footer>
+      </div></body></html>`;
+    }
+
+    function renderSetHtml(set) {
+      const safe = (s) => escapeHtml(s);
+      const figure = (url, name) => url
+        ? `<figure><img src="${safe(url)}" alt="${safe(name)} homepage"/></figure>`
+        : `<figure></figure>`;
+      const conceptsHtml = set.concepts.map((c, i) => `
+        <section class="concept">
+          <div class="concept-head">
+            <span class="meta">${String(i+1).padStart(2,'0')} / ${String(set.concepts.length).padStart(2,'0')}</span>
+            <span class="badge">${safe(c.category)}</span>
+            <h2>${safe(c.name)}</h2>
+          </div>
+          <p class="concept-desc">${safe(c.description)}</p>
+          <div class="imgsolo">${figure(c.frontUrl, c.name)}</div>
+          <div class="prompts" style="grid-template-columns: 1fr"><div><h4>Prompt</h4><p>${safe(c.frontPrompt)}</p></div></div>
+        </section>`).join('');
+      return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Moodboard Concepts — ${safe(set.inputs.idea)}</title>${fontLink()}<style>${styleBlock()}</style></head><body><div class="wrap">
+        <div class="eyebrow">Moodboard / Concept Set</div>
+        <h1>${safe(set.inputs.idea)} <em>· concepts</em></h1>
+        <p class="lede">Six homepage design directions — two minimalist, two contemporary, two dynamic — generated from a single brief.</p>
+        <div class="meta" style="margin-top:14px">${safe(set.inputs.idea)} · ${safe(set.inputs.theme)} · ${safe(set.inputs.products)}</div>
+        ${conceptsHtml}
+        <footer><span>Moodboard · Atelier · ${new Date(set.createdAt).toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'})}</span><span>${set.concepts.length} concepts · ${set.concepts.reduce((n,c)=>n+(c.frontUrl?1:0),0)} pages</span></footer>
+      </div></body></html>`;
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // Init — if archive is empty, ask the server for a curated seed set.
+    // (Used when Claude has pre-rendered concepts via the server-side
+    // driver script. Cleared once the user runs their own generation.)
+    // ────────────────────────────────────────────────────────────────
+    // Always check the server's curated seed. If the server has a set
+    // whose id we haven't seen before, slot it into the archive and make
+    // it the active set. This way swapping the seed file on the server
+    // (e.g. via tools/gen-set.mjs) just shows up on next refresh — no
+    // manual localStorage clearing needed.
+    async function maybeLoadSeed() {
+      try {
+        const r = await fetch('/api/frontend-seed', { cache: 'no-store' });
+        if (!r.ok) return;
+        const seed = await r.json();
+        if (!Array.isArray(seed) || !seed.length) return;
+        const incoming = seed[0];
+        if (archive.some(s => s.id === incoming.id)) return; // already have it
+        archive.unshift(incoming);
+        if (archive.length > 12) archive = archive.slice(0, 12);
+        activeSet = incoming;
+        ideaEl.value     = incoming.inputs.idea     || '';
+        themeEl.value    = incoming.inputs.theme    || '';
+        productsEl.value = incoming.inputs.products || '';
+        saveArchive(archive);
+        updateButton();
+        renderArchive();
+        renderMoodboard();
+        statusLine.textContent = 'fresh curated set loaded';
+      } catch { /* ignore — user can still generate manually */ }
+    }
+
+    renderArchive();
+    renderMoodboard();
+    updateButton();
+    maybeLoadSeed();
+  })();
+  </script>
+</body>
+</html>

@@ -10,16 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-  <!-- Three.js for the interactive 3D model section -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three":          "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/":  "https://unpkg.com/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
-
   <style>
     :root {
       --bg:           #0E0A03;
@@ -178,7 +168,8 @@
     .sequence { position: relative; }
     .sequence__track {
       position: relative;
-      height: 320vh;
+      /* Longer track = more scroll distance per opacity step = smoother transition */
+      height: 420vh;
     }
     .sequence__sticky {
       position: sticky; top: 0;
@@ -192,34 +183,101 @@
       aspect-ratio: 1 / 1;
       overflow: hidden;
       border-radius: 18px;
-      background: #000;
+      /* Subtle ambient glow behind the isolated structure */
+      background:
+        radial-gradient(ellipse 85% 70% at 50% 55%, rgba(48,32,12,0.55) 0%, #050402 75%),
+        #050402;
       box-shadow:
         0 0 0 1px rgba(198,165,89,0.10),
         0 50px 100px rgba(0,0,0,0.6);
     }
-    /* Two overlapping layers on the same stage: the blueprint image (top)
-       fades out as the 3D canvas (bottom) fades in — scroll drives both. */
-    .stage__canvas3d {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      display: block; background: #000;
-      z-index: 1;
-      cursor: grab;
-    }
-    .stage__canvas3d:active { cursor: grabbing; }
-    .stage__blueprint-layer {
+    /* Two stacked images. Blueprint is on top (z:2) and fades from
+       opacity 1 → 0 as scroll progresses, revealing the isolated
+       rendered Taj behind it (z:1, always opaque). GPU-accelerated
+       transform+opacity only, no paint thrash. */
+    .stage__layer {
       position: absolute; inset: 0;
       width: 100%; height: 100%;
       object-fit: contain;
-      background: #000;
       display: block;
-      z-index: 2;
       pointer-events: none;
       will-change: opacity;
+      transform: translateZ(0);
     }
+    .stage__end   { z-index: 1; opacity: 1; }
+    .stage__start { z-index: 3; opacity: 1; }
+
+    /* ── BURST LAYERS (Sagrada-style light bloom) ────────────────────
+       The burst sits *between* end (z:1) and start (z:3). At mid-scroll
+       the gold flare + radial rays peak, making it feel like the
+       building is catching fire with light as the blueprint dissolves. */
+    .stage__burst,
+    .stage__rays {
+      position: absolute; inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      mix-blend-mode: screen;
+      will-change: opacity, transform;
+      transform: translateZ(0);
+    }
+    .stage__burst {
+      background: radial-gradient(
+        circle at 50% 55%,
+        rgba(255, 244, 210, 1.00) 0%,
+        rgba(250, 215, 140, 0.85) 9%,
+        rgba(230, 180, 110, 0.55) 18%,
+        rgba(198, 150, 80,  0.28) 32%,
+        rgba(140,  90, 40,  0.10) 48%,
+        transparent 65%
+      );
+      filter: blur(22px);
+    }
+    .stage__rays {
+      /* conic gradient gives a sun-ray / god-ray sunburst look */
+      background: conic-gradient(from 0deg at 50% 55%,
+        transparent           0deg,
+        rgba(255,230,170,0.35) 4deg,
+        transparent            8deg,
+        rgba(255,230,170,0.25) 14deg,
+        transparent           18deg,
+        rgba(255,230,170,0.30) 26deg,
+        transparent           32deg,
+        rgba(255,230,170,0.20) 42deg,
+        transparent           50deg,
+        rgba(255,230,170,0.30) 60deg,
+        transparent           70deg,
+        rgba(255,230,170,0.25) 82deg,
+        transparent           92deg,
+        rgba(255,230,170,0.30) 110deg,
+        transparent          120deg,
+        rgba(255,230,170,0.20) 140deg,
+        transparent          150deg,
+        rgba(255,230,170,0.30) 172deg,
+        transparent          182deg,
+        rgba(255,230,170,0.25) 205deg,
+        transparent          215deg,
+        rgba(255,230,170,0.30) 240deg,
+        transparent          250deg,
+        rgba(255,230,170,0.20) 275deg,
+        transparent          285deg,
+        rgba(255,230,170,0.30) 310deg,
+        transparent          320deg,
+        rgba(255,230,170,0.25) 345deg,
+        transparent          360deg
+      );
+      filter: blur(5px);
+      -webkit-mask-image: radial-gradient(circle at 50% 55%, black 0%, black 8%, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.5) 50%, transparent 72%);
+              mask-image: radial-gradient(circle at 50% 55%, black 0%, black 8%, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.5) 50%, transparent 72%);
+      /* Very slow spin while visible — adds life */
+      animation: rays-spin 38s linear infinite;
+    }
+    @keyframes rays-spin { to { transform: translateZ(0) rotate(360deg); } }
+
     .stage::after {
       content: ""; position: absolute; inset: 0; pointer-events: none;
       background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 12%, transparent 88%, rgba(0,0,0,0.25) 100%);
+      z-index: 4;
     }
 
     .stage__corner {
@@ -408,46 +466,6 @@
     .foot a { color: var(--cream-mute); transition: color 200ms var(--ease); }
     .foot a:hover { color: var(--cream); }
 
-    /* Interaction affordances shown once the 3D model is fully revealed */
-    .stage__hint {
-      position: absolute;
-      bottom: 22px; left: 22px;
-      z-index: 10;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
-      padding: 6px 12px;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(245,234,214,0.14);
-      border-radius: 999px;
-      color: rgba(245,234,214,0.75);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 360ms var(--ease);
-    }
-    .stage__reset {
-      position: absolute;
-      top: 22px; right: 22px;
-      z-index: 10;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-      padding: 7px 12px;
-      background: rgba(0,0,0,0.65);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(245,234,214,0.22);
-      border-radius: 999px;
-      color: var(--cream);
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 360ms var(--ease), border-color 200ms var(--ease), background 200ms var(--ease), color 200ms var(--ease);
-    }
-    .stage__reset.is-on, .stage__hint.is-on { opacity: 1; }
-    .stage__reset.is-on { pointer-events: auto; }
-    .stage__reset:hover { border-color: var(--gold); background: rgba(198,165,89,0.12); color: var(--gold-light); }
-    .stage__reset:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 3px; }
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
@@ -519,28 +537,29 @@
             <div class="rail__fill" id="railFill"></div>
           </div>
 
-          <!-- Layer 1 (bottom) · 3D WebGL model. Camera framed to match the
-               blueprint's front elevation so the transition is seamless. -->
-          <canvas
-            id="tajCanvas3D"
-            class="stage__canvas3d"
-            width="720"
-            height="720"
-            aria-label="Interactive 3D model of the Taj Mahal"
-          ></canvas>
-
-          <!-- Layer 2 (top) · Blueprint image. Fades out as the user scrolls,
-               revealing the 3D model underneath. -->
+          <!-- End frame (bottom, always opaque) — isolated structure on a
+               transparent canvas, aligned pixel-for-pixel with the
+               blueprint above it. -->
           <img
-            id="tajBlueprint"
-            class="stage__blueprint-layer"
-            src="Blueprint Taj.png"
-            alt="Taj Mahal blueprint elevation drawing"
+            id="tajEnd"
+            class="stage__layer stage__end"
+            src="images/generated/landmarks/taj-02-isolated-aligned.png"
+            alt="Taj Mahal finished structure, aligned to the blueprint"
           />
 
-          <!-- Affordances shown once the transition completes -->
-          <span class="stage__hint" id="stageHint" aria-hidden="true">Drag · Scroll to zoom</span>
-          <button class="stage__reset" id="stageReset" type="button" aria-label="Reset camera to the blueprint view">Reset view</button>
+          <!-- Burst layers — a gold flare + radial rays that bloom in at
+               the midpoint of the scroll and dissolve as the end frame
+               resolves (same light-burst beat as the Sagrada piece). -->
+          <div class="stage__burst" id="tajBurst" aria-hidden="true"></div>
+          <div class="stage__rays"  id="tajRays"  aria-hidden="true"></div>
+
+          <!-- Start frame (top, fades to 0 as you scroll) — blueprint. -->
+          <img
+            id="tajStart"
+            class="stage__layer stage__start"
+            src="images/generated/landmarks/taj-01-blueprint-aligned.png"
+            alt="Taj Mahal blueprint, aligned to the finished structure"
+          />
 
           <div class="cue" id="cue">
             <span>Scroll</span>
@@ -642,429 +661,114 @@
     })();
 
   </script>
-
   <!-- ════════════════════════════════
-       TAJ MAHAL · Scroll-driven blueprint → 3D model transition
-       The 3D canvas sits below the blueprint image in the same stage.
-       As the user scrolls the track, the blueprint opacity eases from
-       1 → 0 while the 3D model's camera pulls back and the whole thing
-       gently rotates. Past the end, OrbitControls takes over and the user
-       can orbit/zoom the live model.
+       Scroll-driven crossfade: start frame → end frame
+       Opacity is the only thing animated (GPU-accelerated), driven by
+       how far the sticky track has travelled past the viewport. A
+       cubic smoothstep easing keeps the fade feeling organic rather
+       than linear. rAF-throttled, runs once per frame at most.
   ════════════════════════════════ -->
-  <script type="module">
-  import * as THREE from 'three';
-  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  <script>
+    (function () {
+      var track   = document.getElementById('seqTrack');
+      var startEl = document.getElementById('tajStart');
+      var endEl   = document.getElementById('tajEnd');
+      var burstEl = document.getElementById('tajBurst');
+      var raysEl  = document.getElementById('tajRays');
+      var rail    = document.getElementById('railFill');
+      var hudIdx  = document.getElementById('hudIdx');
+      var hudTitle= document.getElementById('hudTitle');
+      var hudSub  = document.getElementById('hudSub');
+      var cue     = document.getElementById('cue');
+      if (!track || !startEl) return;
 
-  (function () {
-    const canvas    = document.getElementById('tajCanvas3D');
-    const blueprint = document.getElementById('tajBlueprint');
-    const track     = document.getElementById('seqTrack');
-    const rail      = document.getElementById('railFill');
-    const hudIdx    = document.getElementById('hudIdx');
-    const hudTitle  = document.getElementById('hudTitle');
-    const hudSub    = document.getElementById('hudSub');
-    const cue       = document.getElementById('cue');
-    const hint      = document.getElementById('stageHint');
-    const reset     = document.getElementById('stageReset');
-    if (!canvas || !blueprint || !track) return;
-
-    // ── Renderer, scene, camera ──────────────────────────
-    const renderer = new THREE.WebGLRenderer({
-      canvas, antialias: true, alpha: false, powerPreference: 'high-performance',
-    });
-    renderer.setClearColor(0x000000, 1);
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    // Filmic tone mapping with slight under-exposure gives the sepia,
-    // high-contrast "illustration" quality of the End Frame reference.
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.92;
-
-    const scene = new THREE.Scene();
-    // Near-pure-black backdrop with a barely-there warm glow just behind
-    // the building, matching the End Frame's void-and-lit-building vibe.
-    const bg = new THREE.Mesh(
-      new THREE.CircleGeometry(80, 64),
-      new THREE.ShaderMaterial({
-        uniforms: {
-          c1: { value: new THREE.Color(0x120802) },
-          c2: { value: new THREE.Color(0x000000) },
-        },
-        vertexShader:   'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
-        fragmentShader: 'varying vec2 vUv; uniform vec3 c1; uniform vec3 c2; void main(){ float d=distance(vUv,vec2(0.5)); gl_FragColor=vec4(mix(c1,c2,smoothstep(0.05,0.55,d)),1.0); }',
-        depthWrite: false,
-        side: THREE.DoubleSide,
-      })
-    );
-    bg.position.set(0, 3, -20);
-    scene.add(bg);
-
-    // Framing matches the blueprint: front elevation, eye slightly above base.
-    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
-    const CAM_HOME = { pos: new THREE.Vector3(0, 3.2, 17), target: new THREE.Vector3(0, 2.8, 0) };
-    camera.position.copy(CAM_HOME.pos);
-    camera.lookAt(CAM_HOME.target);
-
-    // ── Lights (dramatic warm spotlight against a black void) ─────
-    // Low ambient = deep shadows; single strong warm key = sepia drama.
-    scene.add(new THREE.AmbientLight(0x3a2410, 0.18));
-
-    const key = new THREE.DirectionalLight(0xffcf88, 1.85);
-    key.position.set(3.5, 9, 6.5);
-    scene.add(key);
-
-    // Just enough warm fill to keep shadow corners from going crushed-black
-    const fill = new THREE.DirectionalLight(0x664424, 0.35);
-    fill.position.set(-4.5, 3, 3);
-    scene.add(fill);
-
-    // Warm back-rim makes the silhouette read against the black background
-    const rim = new THREE.DirectionalLight(0xe6b979, 0.75);
-    rim.position.set(0, 4, -9);
-    scene.add(rim);
-
-    // Subtle warm ground-bounce, very dim, keeps the palette consistent
-    const bounce = new THREE.HemisphereLight(0x2a1a08, 0x000000, 0.30);
-    scene.add(bounce);
-
-    // ── Materials (amber-sepia to match End Frame reference) ─────
-    // Muted saturation, warm cast, subtle emissive so the surfaces pick up
-    // a faint glow in shadow areas — pushes the "painted illustration" feel.
-    const marble = new THREE.MeshStandardMaterial({
-      color: 0xd4b378, roughness: 0.62, metalness: 0.02,
-      emissive: 0x201408, emissiveIntensity: 0.45,
-    });
-    const stone  = new THREE.MeshStandardMaterial({
-      color: 0x8a6a3a, roughness: 0.78, metalness: 0.02,
-      emissive: 0x120a03, emissiveIntensity: 0.35,
-    });
-    const gold   = new THREE.MeshStandardMaterial({
-      color: 0xe8c080, roughness: 0.25, metalness: 0.92,
-      emissive: 0x3a2a12, emissiveIntensity: 0.55,
-    });
-    const shade  = new THREE.MeshStandardMaterial({
-      color: 0x0a0603, roughness: 0.92, metalness: 0.0,
-    });
-
-    // ── Geometry: Taj Mahal ──────────────────────────────
-    // Proportions modeled to match the blueprint on the left — platform width
-    // ~12, main body ~5 wide × 3 tall, dome peaks around y≈7, minarets ~5 tall.
-    const taj = new THREE.Group();
-
-    // --- Platform (chabutra) ---
-    const platform = new THREE.Mesh(new THREE.BoxGeometry(12, 0.5, 8), stone);
-    platform.position.y = -0.25;
-    taj.add(platform);
-    const plinth = new THREE.Mesh(new THREE.BoxGeometry(11.4, 0.1, 7.4), marble);
-    plinth.position.y = 0.05;
-    taj.add(plinth);
-
-    // --- Main mausoleum body ---
-    const body = new THREE.Mesh(new THREE.BoxGeometry(5, 3, 5), marble);
-    body.position.y = 1.6;
-    taj.add(body);
-
-    // Chamfered corner pilasters (four thin tall boxes at the corners)
-    const pilasterGeom = new THREE.BoxGeometry(0.4, 3.1, 0.4);
-    [[-2.3, -2.3], [2.3, -2.3], [-2.3, 2.3], [2.3, 2.3]].forEach(([px, pz]) => {
-      const pil = new THREE.Mesh(pilasterGeom, marble);
-      pil.position.set(px, 1.6, pz);
-      taj.add(pil);
-    });
-
-    // Crown cornice on top of body
-    const cornice = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.2, 5.2), marble);
-    cornice.position.y = 3.2;
-    taj.add(cornice);
-
-    // --- Iwan (big central front arch, recessed) ---
-    const iwanRecess = new THREE.Mesh(new THREE.BoxGeometry(1.9, 2.3, 0.08), shade);
-    iwanRecess.position.set(0, 1.4, 2.52);
-    taj.add(iwanRecess);
-
-    // Arch top (rounded, created from a half-disc)
-    const iwanTopGeom = new THREE.RingGeometry(0, 0.95, 32, 1, 0, Math.PI);
-    const iwanTop = new THREE.Mesh(iwanTopGeom, shade);
-    iwanTop.position.set(0, 2.55, 2.525);
-    taj.add(iwanTop);
-
-    // Matching iwan on the back face
-    const iwanBack = iwanRecess.clone();
-    iwanBack.position.z = -2.52;
-    iwanBack.rotation.y = Math.PI;
-    taj.add(iwanBack);
-
-    // Smaller side arches (front)
-    [-1.7, 1.7].forEach(x => {
-      const sa = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.3, 0.06), shade);
-      sa.position.set(x, 0.85, 2.52);
-      taj.add(sa);
-    });
-
-    // --- Dome drum ---
-    const drum = new THREE.Mesh(new THREE.CylinderGeometry(1.75, 1.75, 1.1, 56), marble);
-    drum.position.y = 3.85;
-    taj.add(drum);
-
-    // Small decorative ring on drum
-    const drumRing = new THREE.Mesh(new THREE.TorusGeometry(1.78, 0.06, 12, 56), marble);
-    drumRing.rotation.x = Math.PI / 2;
-    drumRing.position.y = 4.4;
-    taj.add(drumRing);
-
-    // --- Onion dome via LatheGeometry ---
-    const onionPoints = [
-      new THREE.Vector2(0.00, 0.00),
-      new THREE.Vector2(1.75, 0.00),
-      new THREE.Vector2(1.95, 0.35),
-      new THREE.Vector2(2.02, 0.85),
-      new THREE.Vector2(2.00, 1.25),
-      new THREE.Vector2(1.82, 1.65),
-      new THREE.Vector2(1.30, 2.20),
-      new THREE.Vector2(0.75, 2.60),
-      new THREE.Vector2(0.32, 2.82),
-      new THREE.Vector2(0.14, 2.95),
-      new THREE.Vector2(0.00, 3.05),
-    ];
-    const dome = new THREE.Mesh(new THREE.LatheGeometry(onionPoints, 56), marble);
-    dome.position.y = 4.4;
-    taj.add(dome);
-
-    // --- Finial (gold spire atop dome) ---
-    const finialStem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.5, 12), gold);
-    finialStem.position.y = 7.70;
-    taj.add(finialStem);
-    const finialBall = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 16), gold);
-    finialBall.position.y = 7.50;
-    taj.add(finialBall);
-    const finialTip = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.35, 12), gold);
-    finialTip.position.y = 8.15;
-    taj.add(finialTip);
-
-    // --- Four corner chhatris (small kiosks on main body) ---
-    [[-1.75, -1.75], [1.75, -1.75], [-1.75, 1.75], [1.75, 1.75]].forEach(([cx, cz]) => {
-      const ch = new THREE.Group();
-      // 4 tiny corner columns
-      [[-0.25, -0.25], [0.25, -0.25], [-0.25, 0.25], [0.25, 0.25]].forEach(([dx, dz]) => {
-        const col = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.55, 10), marble);
-        col.position.set(dx, 0.3, dz);
-        ch.add(col);
-      });
-      // Platform between columns and dome
-      const cPlat = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.06, 18), marble);
-      cPlat.position.y = 0.58;
-      ch.add(cPlat);
-      // Small onion-ish dome
-      const smDome = new THREE.Mesh(
-        new THREE.SphereGeometry(0.34, 20, 16, 0, Math.PI * 2, 0, Math.PI / 2),
-        marble
-      );
-      smDome.position.y = 0.6;
-      smDome.scale.y = 1.05;
-      ch.add(smDome);
-      // Tiny gold finial
-      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.24, 10), gold);
-      tip.position.y = 1.05;
-      ch.add(tip);
-      ch.position.set(cx, 3.3, cz);
-      taj.add(ch);
-    });
-
-    // --- Four minarets at corners of platform ---
-    const minaretGroup = new THREE.Group();
-    [[-5.0, -3.0], [5.0, -3.0], [-5.0, 3.0], [5.0, 3.0]].forEach(([mx, mz]) => {
-      const m = new THREE.Group();
-      // Base cube
-      const base = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.35, 0.7), marble);
-      base.position.y = 0.2;
-      m.add(base);
-      // Tapered shaft in 3 stages with balcony rings between them
-      const stages = [
-        { y: 1.2, r1: 0.30, r2: 0.34, h: 1.6 },
-        { y: 2.8, r1: 0.27, r2: 0.30, h: 1.5 },
-        { y: 4.2, r1: 0.24, r2: 0.27, h: 1.2 },
-      ];
-      stages.forEach(s => {
-        const seg = new THREE.Mesh(new THREE.CylinderGeometry(s.r1, s.r2, s.h, 20), marble);
-        seg.position.y = s.y;
-        m.add(seg);
-      });
-      // Balcony rings
-      [2.0, 3.55].forEach(by => {
-        const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.10, 20), marble);
-        ring.position.y = by;
-        m.add(ring);
-      });
-      // Top kiosk (chhatri-style cap)
-      const topCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.3, 16), marble);
-      topCyl.position.y = 4.95;
-      m.add(topCyl);
-      const mDome = new THREE.Mesh(
-        new THREE.SphereGeometry(0.3, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2),
-        marble
-      );
-      mDome.position.y = 5.10;
-      m.add(mDome);
-      // Tiny gold finial
-      const mFinial = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.28, 10), gold);
-      mFinial.position.y = 5.55;
-      m.add(mFinial);
-
-      m.position.set(mx, 0, mz);
-      minaretGroup.add(m);
-    });
-    taj.add(minaretGroup);
-
-    // --- Reflection pool — darker, with a touch of sheen ---
-    const pool = new THREE.Mesh(
-      new THREE.PlaneGeometry(2, 6),
-      new THREE.MeshStandardMaterial({
-        color: 0x0a0503, roughness: 0.12, metalness: 0.35,
-      })
-    );
-    pool.rotation.x = -Math.PI / 2;
-    pool.position.set(0, 0.06, 6);
-    taj.add(pool);
-
-    // Ground — near-black so the building floats like in the End Frame
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(60, 60),
-      new THREE.MeshStandardMaterial({ color: 0x050302, roughness: 1 })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.55;
-    scene.add(ground);
-
-    scene.add(taj);
-
-    // ── Controls (only become interactive past the end of the scroll) ──
-    const controls = new OrbitControls(camera, canvas);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.07;
-    controls.target.copy(CAM_HOME.target);
-    controls.minDistance  = 10;
-    controls.maxDistance  = 32;
-    controls.minPolarAngle = 0.25;
-    controls.maxPolarAngle = Math.PI / 2 + 0.1;
-    controls.enablePan  = false;
-    controls.rotateSpeed = 0.6;
-    controls.enabled = false;   // user orbit disabled until reveal completes
-
-    let userOrbited = false;
-    controls.addEventListener('start', () => { userOrbited = true; });
-
-    reset && reset.addEventListener('click', () => {
-      // Ease camera back to the blueprint-matching home view
-      const startPos = camera.position.clone();
-      const startTgt = controls.target.clone();
-      const endPos   = CAM_HOME.pos.clone();
-      const endTgt   = CAM_HOME.target.clone();
-      const t0 = performance.now();
-      function step(now) {
-        const t = Math.min(1, (now - t0) / 700);
-        const e = 1 - Math.pow(1 - t, 3);
-        camera.position.lerpVectors(startPos, endPos, e);
-        controls.target.lerpVectors(startTgt, endTgt, e);
-        if (t < 1) requestAnimationFrame(step);
-        else { userOrbited = false; taj.rotation.y = 0; }
-      }
-      requestAnimationFrame(step);
-    });
-
-    // ── Size ──────────────────────────────────────────────
-    const stage = canvas.parentElement;  // .stage
-    function resize() {
-      const w = stage.clientWidth;
-      const h = stage.clientHeight;
-      if (!w || !h) return;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-    }
-    resize();
-    window.addEventListener('resize', resize, { passive: true });
-
-    // ── Scroll-driven transition ──────────────────────────
-    // p=0 → blueprint fully opaque, 3D camera pulled slightly back
-    // p=~0.35 → blueprint starts fading, model starts rotating
-    // p=~0.85 → blueprint fully gone, camera at home, controls go live
-    function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
-    function smoothstep(e0, e1, v) {
-      const t = clamp((v - e0) / (e1 - e0), 0, 1);
-      return t * t * (3 - 2 * t);
-    }
-
-    let scrollP = 0;
-    function readScroll() {
-      const rect = track.getBoundingClientRect();
-      const scrollable = track.offsetHeight - window.innerHeight;
-      if (scrollable <= 0) return 0;
-      return clamp(-rect.top / scrollable, 0, 1);
-    }
-
-    let ticking = false;
-    function onScroll() {
-      if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; scrollP = readScroll(); updateHUD(scrollP); }); }
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-
-    function updateHUD(p) {
-      if (rail) rail.style.height = (p * 100).toFixed(2) + '%';
-
-      let idxLabel, titleLabel, subLabel;
-      if (p < 0.35)       { idxLabel = '01 / 03'; titleLabel = 'Blueprint';    subLabel = 'Pen & paper'; }
-      else if (p < 0.80)  { idxLabel = '02 / 03'; titleLabel = 'Lifting off';  subLabel = 'Paper to stone'; }
-      else                { idxLabel = '03 / 03'; titleLabel = '3D Model';     subLabel = 'Drag to orbit'; }
-      if (hudIdx   && hudIdx.textContent   !== idxLabel)   hudIdx.textContent   = idxLabel;
-      if (hudTitle && hudTitle.textContent !== titleLabel) hudTitle.textContent = titleLabel;
-      if (hudSub   && hudSub.textContent   !== subLabel)   hudSub.textContent   = subLabel;
-
-      if (cue) cue.style.opacity = p > 0.04 ? '0' : '1';
-    }
-
-    // ── Render loop ───────────────────────────────────────
-    function animate() {
-      requestAnimationFrame(animate);
-
-      const p = scrollP;
-
-      // Blueprint crossfade — linger on blueprint for the first third,
-      // fade cleanly across the middle, fully gone past 0.75.
-      const bpOpacity = 1 - smoothstep(0.25, 0.72, p);
-      blueprint.style.opacity = bpOpacity.toFixed(3);
-
-      // Camera: start slightly farther & higher, ease to CAM_HOME as the
-      // blueprint fades. Feels like the paper pulls back to reveal the model.
-      if (!userOrbited) {
-        const ease = smoothstep(0.0, 0.85, p);
-        camera.position.set(
-          0,
-          3.8 - 0.6 * ease,
-          19 - 2.0 * ease
-        );
-        controls.target.set(0, 2.8, 0);
-        camera.lookAt(controls.target);
-
-        // Gentle rotation during + after reveal so the 3D-ness is obvious
-        taj.rotation.y = p * Math.PI * 0.35;
+      function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+      function smoothstep(e0, e1, v) {
+        var t = clamp((v - e0) / (e1 - e0), 0, 1);
+        return t * t * (3 - 2 * t);
       }
 
-      // Past 0.85 scroll, hand control over to the user
-      const orbitable = p > 0.85;
-      controls.enabled = orbitable;
-      if (hint)  hint.classList.toggle('is-on',  orbitable);
-      if (reset) reset.classList.toggle('is-on', orbitable);
+      var ticking = false;
+      var lastP = -1;
 
-      controls.update();
-      renderer.render(scene, camera);
-    }
+      function read() {
+        var rect = track.getBoundingClientRect();
+        var range = track.offsetHeight - window.innerHeight;
+        if (range <= 0) return 0;
+        return clamp(-rect.top / range, 0, 1);
+      }
 
-    // Initial read + first paint
-    scrollP = readScroll();
-    updateHUD(scrollP);
-    animate();
-  })();
+      function paint(p) {
+        // Crossfade curve: blueprint holds for the first 10%, fades
+        // from 10%→85%, fully resolved by 85%.
+        var fade = smoothstep(0.10, 0.85, p);
+
+        // ── Start (blueprint) ───────────────────────────────────
+        // Fade to transparent. At mid-transition the blueprint also
+        // blurs and scales up just a touch — feels like the drawing
+        // is dissolving rather than just going invisible.
+        var midMix  = Math.sin(fade * Math.PI);    // peaks 1 at middle
+        var bpBlur  = (midMix * 6).toFixed(2);     // 0 → 6 → 0 px
+        var bpScale = (1 + midMix * 0.028).toFixed(4);  // 1 → 1.028 → 1
+        startEl.style.opacity   = (1 - fade).toFixed(4);
+        startEl.style.filter    = 'blur(' + bpBlur + 'px)';
+        startEl.style.transform = 'translateZ(0) scale(' + bpScale + ')';
+
+        // ── End (finished structure) ────────────────────────────
+        // Starts slightly smaller and softly blurred, snaps crisp
+        // and full-size as it takes over. Gives the reveal some
+        // weight rather than a flat opacity swap.
+        var endBlur  = ((1 - fade) * midMix * 4).toFixed(2);
+        var endScale = (0.965 + fade * 0.035).toFixed(4);
+        endEl.style.filter    = 'blur(' + endBlur + 'px)';
+        endEl.style.transform = 'translateZ(0) scale(' + endScale + ')';
+
+        // ── Burst (radial gold flare) ───────────────────────────
+        // Peaks hot in the middle of the crossfade and fades to 0
+        // on both ends. Sin curve = smooth in, smooth out. Slight
+        // zoom-out so the bloom feels like light breathing.
+        var burstT = clamp((p - 0.15) / 0.70, 0, 1);
+        var burst  = Math.sin(burstT * Math.PI);
+        if (burstEl) {
+          burstEl.style.opacity   = (burst * 0.95).toFixed(4);
+          burstEl.style.transform = 'translateZ(0) scale(' + (0.94 + burst * 0.10).toFixed(4) + ')';
+        }
+        if (raysEl) {
+          raysEl.style.opacity = (burst * 0.7).toFixed(4);
+        }
+
+        // ── HUD + progress rail ─────────────────────────────────
+        if (rail) rail.style.height = (p * 100).toFixed(2) + '%';
+
+        var idxL, titleL, subL;
+        if (p < 0.10)      { idxL = '01 / 02'; titleL = 'Blueprint';    subL = 'Pen & paper'; }
+        else if (p < 0.48) { idxL = '01 / 02'; titleL = 'Igniting';     subL = 'Light rising'; }
+        else if (p < 0.85) { idxL = '02 / 02'; titleL = 'Crystallising'; subL = 'Marble resolves'; }
+        else               { idxL = '02 / 02'; titleL = 'Finished';     subL = 'Built in marble'; }
+        if (hudIdx   && hudIdx.textContent   !== idxL)   hudIdx.textContent   = idxL;
+        if (hudTitle && hudTitle.textContent !== titleL) hudTitle.textContent = titleL;
+        if (hudSub   && hudSub.textContent   !== subL)   hudSub.textContent   = subL;
+
+        if (cue) cue.style.opacity = p > 0.03 ? '0' : '1';
+      }
+
+      function tick() {
+        ticking = false;
+        var p = read();
+        if (Math.abs(p - lastP) < 0.0005) return;
+        lastP = p;
+        paint(p);
+      }
+
+      function onScroll() {
+        if (!ticking) { ticking = true; requestAnimationFrame(tick); }
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+
+      paint(read());
+    })();
   </script>
+
 </body>
 </html>

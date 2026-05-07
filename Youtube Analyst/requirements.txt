@@ -1,0 +1,13 @@
+# YouTube Analyst — Python dependencies
+# Install with: pip install -r requirements.txt
+
+# Core Google Workspace SDK — one library covers YouTube Data, Sheets, Slides, Gmail
+google-api-python-client>=2.120.0
+
+# OAuth2 flow helpers (browser-based consent + token refresh)
+google-auth>=2.29.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+
+# Load .env for config
+python-dotenv>=1.0.1

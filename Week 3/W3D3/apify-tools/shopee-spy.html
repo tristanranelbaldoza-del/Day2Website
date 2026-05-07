@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shopee Spy — Apify Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0B0D10;
+      --bg-elev: #13161B;
+      --surface: #181C22;
+      --surface-hi: #1F242B;
+      --border: #262B33;
+      --border-faint: #1A1E25;
+      --text: #E8E5DE;
+      --text-dim: #8A8E97;
+      --text-faint: #555962;
+      --brand: #FFC857;
+      --brand-ink: #1A1206;
+      --live: #4ADE80;
+      --warn: #FBBF24;
+      --error: #F87171;
+      --c1: #FF6B4A;
+      --c2: #F72585;
+      --c3: #4CC9F0;
+      --c4: #B5E853;
+      --grid: rgba(255, 255, 255, 0.022);
+      --grid-strong: rgba(255, 255, 255, 0.04);
+      --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 24px 48px -24px rgba(0, 0, 0, 0.65);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 80px),
+        repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 80px),
+        radial-gradient(ellipse at 18% -10%, rgba(181, 232, 83, 0.07), transparent 55%),
+        radial-gradient(ellipse at 90% 110%, rgba(255, 200, 87, 0.05), transparent 55%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ---------- Sticky Nav ---------- */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      background: rgba(11, 13, 16, 0.72);
+      border-bottom: 1px solid var(--border-faint);
+    }
+    .nav-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .brand-mark::before {
+      content: '◢';
+      color: var(--brand);
+      font-size: 13px;
+      transform: translateY(-1px);
+    }
+    .brand-mark .sep { color: var(--text-faint); font-weight: 400; }
+    .brand-mark .ver {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: 0.18em;
+      font-weight: 400;
+    }
+    .nav-back {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      transition: color 180ms ease;
+    }
+    .nav-back:hover { color: var(--brand); }
+    .nav-back::before { content: '← '; }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      padding: 64px 0 40px;
+      position: relative;
+      border-bottom: 1px dashed var(--border);
+    }
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 22px;
+    }
+    .hero-eyebrow .bar {
+      flex: 0 0 36px;
+      height: 1px;
+      background: var(--text-faint);
+    }
+    .hero h1 {
+      font-size: clamp(44px, 6.4vw, 76px);
+      font-weight: 700;
+      line-height: 0.96;
+      letter-spacing: -0.01em;
+      margin-bottom: 22px;
+      max-width: 18ch;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--c4);
+      position: relative;
+      display: inline-block;
+    }
+    .hero h1 em::after {
+      content: '';
+      position: absolute;
+      bottom: 0.06em;
+      left: 0; right: 0;
+      height: 0.08em;
+      background: var(--c4);
+      opacity: 0.22;
+    }
+    .hero-tag {
+      max-width: 60ch;
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+    .hero-tag code {
+      color: var(--text);
+      background: var(--surface);
+      padding: 1px 6px;
+      border: 1px solid var(--border);
+      font-size: 12.5px;
+    }
+
+    /* ---------- Search Panel ---------- */
+    section.work { padding: 40px 0 24px; }
+
+    .panel {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .panel-head h3 { font-size: 16px; letter-spacing: 0.16em; }
+    .panel-head .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+    .panel-body { padding: 28px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .field { display: block; }
+    .field-label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 10px;
+    }
+    .field input,
+    .field select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 200ms ease, box-shadow 200ms ease;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .field input::placeholder { color: var(--text-faint); }
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--c4);
+      box-shadow: 0 0 0 3px rgba(181, 232, 83, 0.14);
+    }
+    .field.select-wrap { position: relative; }
+    .field.select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      color: var(--text-faint);
+      pointer-events: none;
+      font-size: 11px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px 22px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 80ms ease;
+      min-width: 200px;
+      font-weight: 500;
+    }
+    .btn:hover {
+      background: var(--surface);
+      border-color: var(--text-dim);
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:focus-visible {
+      outline: 2px solid var(--c4);
+      outline-offset: 3px;
+    }
+    .btn[data-variant="primary"] {
+      background: var(--c4);
+      border-color: var(--c4);
+      color: #15290A;
+      font-weight: 600;
+    }
+    .btn[data-variant="primary"]:hover {
+      background: #C5F067;
+      border-color: #C5F067;
+    }
+    .btn[data-variant="secondary"] {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+    .btn[data-variant="secondary"]:hover { background: rgba(255, 200, 87, 0.08); }
+    .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+    .btn .spinner {
+      width: 12px;
+      height: 12px;
+      border: 1.5px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      display: none;
+      animation: spin 700ms linear infinite;
+    }
+    .btn.loading .spinner { display: inline-block; }
+    .btn.loading .label { opacity: 0.65; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      color: var(--text-faint);
+      background: var(--bg);
+    }
+    .status-pill::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text-faint);
+    }
+    .status-pill[data-state="idle"] { border-color: var(--border); color: var(--text-faint); }
+    .status-pill[data-state="running"] { border-color: var(--warn); color: var(--warn); }
+    .status-pill[data-state="running"]::before {
+      background: var(--warn);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    .status-pill[data-state="completed"] { border-color: var(--live); color: var(--live); }
+    .status-pill[data-state="completed"]::before {
+      background: var(--live);
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
+    }
+    .status-pill[data-state="error"] { border-color: var(--error); color: var(--error); }
+    .status-pill[data-state="error"]::before { background: var(--error); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.85); }
+    }
+
+    /* ---------- Toolbar (meta + view toggle) ---------- */
+    section.results-section { padding: 16px 0 80px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 4px 20px;
+      flex-wrap: wrap;
+    }
+    .toolbar[hidden] { display: none; }
+    .results-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      flex-wrap: wrap;
+    }
+    .results-meta strong { color: var(--text); font-weight: 500; }
+    .results-meta .sep {
+      width: 4px; height: 4px;
+      background: var(--text-faint);
+      border-radius: 50%;
+      opacity: 0.6;
+    }
+
+    .view-toggle {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .view-toggle button {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      padding: 9px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 160ms ease, color 160ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .view-toggle button:hover { color: var(--text); background: var(--surface); }
+    .view-toggle button.active {
+      background: var(--c4);
+      color: #15290A;
+      font-weight: 600;
+    }
+    .view-toggle button:focus-visible {
+      outline: 2px solid var(--c4);
+      outline-offset: 2px;
+    }
+    .view-toggle button + button { border-left: 1px solid var(--border); }
+    .view-toggle .ic { font-size: 12px; }
+
+    /* ---------- Table view ---------- */
+    .view[hidden] { display: none; }
+    .table-wrap {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .table-scroll { overflow-x: auto; }
+    table.results {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    table.results thead th {
+      text-align: left;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      padding: 16px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    table.results tbody td {
+      padding: 16px 20px;
+      vertical-align: top;
+      border-bottom: 1px solid var(--border-faint);
+      color: var(--text);
+    }
+    table.results tbody tr { transition: background 160ms ease; }
+    table.results tbody tr:hover { background: var(--surface); }
+    table.results tbody tr:last-child td { border-bottom: none; }
+
+    .col-rank {
+      width: 64px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--text-faint);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      padding-top: 18px;
+    }
+    .col-name {
+      max-width: 400px;
+      line-height: 1.55;
+      color: var(--text);
+    }
+    .col-name .badge {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 0.24em;
+      color: var(--top-accent, var(--c4));
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+    }
+    .col-price {
+      width: 130px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+    }
+    .col-price .none {
+      color: var(--text-faint);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 400;
+      font-size: 12px;
+    }
+    .col-desc {
+      color: var(--text-dim);
+      font-size: 12px;
+      line-height: 1.65;
+      max-width: 380px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .col-link {
+      width: 100px;
+      text-align: right;
+    }
+    .col-link a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-dim);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      border-bottom: 1px solid transparent;
+      transition: color 180ms ease, border-color 180ms ease;
+    }
+    .col-link a:hover {
+      color: var(--c4);
+      border-bottom-color: var(--c4);
+    }
+    .col-link a::after {
+      content: '↗';
+      font-size: 13px;
+      transform: translateY(-1px);
+    }
+
+    /* ---- Best-price highlight (lowest 3 prices) ---- */
+    table.results tbody tr.best td:first-child { position: relative; }
+    table.results tbody tr.best td:first-child::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--top-accent, var(--c4));
+    }
+    table.results tbody tr.best .col-rank { color: var(--top-accent, var(--c4)); }
+    table.results tbody tr.best-1 { --top-accent: var(--c4); }
+    table.results tbody tr.best-2 { --top-accent: var(--brand); }
+    table.results tbody tr.best-3 { --top-accent: var(--c3); }
+    table.results tbody tr.best-1 td { background: linear-gradient(90deg, rgba(181, 232, 83, 0.07), transparent 50%); }
+    table.results tbody tr.best-2 td { background: linear-gradient(90deg, rgba(255, 200, 87, 0.06), transparent 50%); }
+    table.results tbody tr.best-3 td { background: linear-gradient(90deg, rgba(76, 201, 240, 0.05), transparent 50%); }
+    table.results tbody tr.best:hover td {
+      background-color: var(--surface);
+      background-image: none;
+    }
+
+    /* ---------- Card grid view ---------- */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .product {
+      position: relative;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      padding: 22px 22px 18px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: hidden;
+      isolation: isolate;
+      transition:
+        transform 260ms cubic-bezier(.2, .8, .2, 1),
+        border-color 220ms ease,
+        background 220ms ease;
+    }
+    .product::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--card-accent, var(--border));
+      transition: width 260ms cubic-bezier(.2, .8, .2, 1), opacity 220ms ease;
+    }
+    .product::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 100% 0%, var(--card-accent, var(--c4)), transparent 60%);
+      opacity: 0;
+      transition: opacity 320ms ease;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      z-index: -1;
+    }
+    .product:hover {
+      transform: translateY(-3px);
+      border-color: var(--card-accent, rgba(181, 232, 83, 0.45));
+      background: var(--surface);
+    }
+    .product:hover::before { width: 5px; }
+    .product:hover::after { opacity: 0.06; }
+    .product[data-best="1"] { --card-accent: var(--c4); }
+    .product[data-best="2"] { --card-accent: var(--brand); }
+    .product[data-best="3"] { --card-accent: var(--c3); }
+
+    .product-rank {
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      color: var(--text-faint);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .product-rank .best-badge {
+      color: var(--card-accent, var(--c4));
+      letter-spacing: 0.28em;
+    }
+    .product-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 19px;
+      letter-spacing: 0.015em;
+      text-transform: uppercase;
+      color: var(--text);
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 3.5em;
+    }
+    .product-price {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 32px;
+      line-height: 1;
+      color: var(--card-accent, var(--text));
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.01em;
+    }
+    .product-price.none {
+      color: var(--text-faint);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .product-desc {
+      color: var(--text-dim);
+      font-size: 12px;
+      line-height: 1.65;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1 1 auto;
+    }
+    .product-actions {
+      padding-top: 12px;
+      border-top: 1px solid var(--border-faint);
+    }
+    .product-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+      padding: 10px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+    }
+    .product-link:hover {
+      background: var(--surface-hi);
+      border-color: var(--c4);
+      color: var(--c4);
+    }
+    .product-link::after { content: '↗'; font-size: 13px; transform: translateY(-1px); }
+
+    /* ---- Empty / loading ---- */
+    .empty {
+      grid-column: 1 / -1;
+      padding: 80px 28px;
+      text-align: center;
+      color: var(--text-faint);
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      line-height: 2;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+    }
+    .empty strong {
+      display: block;
+      color: var(--text-dim);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .empty .hint {
+      display: block;
+      margin-top: 18px;
+      color: var(--text-faint);
+      font-size: 10px;
+      letter-spacing: 0.28em;
+    }
+    .empty .progress {
+      display: block;
+      margin-top: 14px;
+      color: var(--warn);
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      animation: blink 1.6s ease-in-out infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+    /* ---------- Footer ---------- */
+    .foot {
+      border-top: 1px dashed var(--border);
+      padding: 28px 0 40px;
+      color: var(--text-faint);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .reveal { opacity: 0; transform: translateY(8px); animation: rise 700ms cubic-bezier(.2,.8,.2,1) forwards; }
+    .reveal.d-1 { animation-delay: 60ms; }
+    .reveal.d-2 { animation-delay: 140ms; }
+    .reveal.d-3 { animation-delay: 220ms; }
+    .reveal.d-4 { animation-delay: 300ms; }
+    @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 1024px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 860px) {
+      .nav-inner, .container { padding: 0 22px; }
+      .hero { padding: 48px 0 32px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .actions .btn { min-width: 0; flex: 1 1 220px; }
+      .cards { grid-template-columns: 1fr; }
+      .col-name, .col-desc { max-width: none; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .brand-mark .sep, .brand-mark .ver { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand-mark">
+      Apify Tools <span class="sep">/</span> <span class="ver">v0.1.0</span>
+    </div>
+    <a class="nav-back" href="/">Back to Dashboard</a>
+  </div>
+</header>
+
+<section class="container hero">
+  <div class="hero-eyebrow reveal d-1"><span class="bar"></span> Tool · Shopee Listings</div>
+  <h1 class="reveal d-2">Shopee <em>Spy</em></h1>
+  <p class="hero-tag reveal d-3">
+    Pull public product listings from <code>shopee.ph</code> via Firecrawl SERP search.
+    Prices parsed from snippet text, names cleaned, deduped — switch between table and grid views.
+  </p>
+</section>
+
+<section class="container work">
+  <div class="panel reveal d-1">
+    <div class="panel-head">
+      <h3>Search</h3>
+      <span class="tag">GET /api/shopee/search</span>
+    </div>
+    <div class="panel-body">
+      <form id="search-form" autocomplete="off">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field-label" for="q">Keyword</label>
+            <input id="q" name="q" type="text" placeholder='e.g. "wireless earbuds" or "mini fan Philippines"' required>
+          </div>
+          <div class="field select-wrap">
+            <label class="field-label" for="sort">Sort by</label>
+            <select id="sort" name="sort">
+              <option value="default">Default</option>
+              <option value="price-asc">Price · low → high</option>
+              <option value="price-desc">Price · high → low</option>
+              <option value="name">Name · A → Z</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn" data-variant="primary" id="run-btn">
+            <span class="spinner"></span><span class="label">Scrape</span>
+          </button>
+          <button type="button" class="btn" data-variant="secondary" id="export-btn" disabled>
+            <span class="label">Export CSV</span>
+          </button>
+          <span class="status-pill" data-state="idle" id="status">Idle</span>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="container results-section">
+  <div class="toolbar" id="toolbar" hidden>
+    <div class="results-meta" id="results-meta">
+      <span><strong id="meta-count">0</strong> products</span>
+      <span class="sep"></span>
+      <span>Query <strong id="meta-q">—</strong></span>
+      <span class="sep"></span>
+      <span><strong id="meta-priced">0</strong> with price</span>
+    </div>
+    <div class="view-toggle" role="tablist" aria-label="View mode">
+      <button type="button" data-view="table" class="active" role="tab" aria-selected="true">
+        <span class="ic">▤</span><span>Table</span>
+      </button>
+      <button type="button" data-view="cards" role="tab" aria-selected="false">
+        <span class="ic">▦</span><span>Cards</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="view" id="view-table">
+    <div class="table-wrap">
+      <div class="table-scroll" id="table-scroll">
+        <div class="empty" id="empty-state">
+          <strong>No products yet</strong>
+          Run a keyword search to spy on Shopee Philippines listings.
+          <span class="hint">Tip · use a specific phrase like <em>"mini fan Philippines"</em> for cleaner results</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-cards" hidden>
+    <div class="cards" id="cards-grid"></div>
+  </div>
+</section>
+
+<footer class="container foot">
+  <div>© Apify Tools · Shopee Spy</div>
+  <div>powered by firecrawl /v1/search</div>
+</footer>
+
+<script>
+  const form         = document.getElementById('search-form');
+  const runBtn       = document.getElementById('run-btn');
+  const exportBtn    = document.getElementById('export-btn');
+  const status       = document.getElementById('status');
+  const toolbar      = document.getElementById('toolbar');
+  const metaCount    = document.getElementById('meta-count');
+  const metaQ        = document.getElementById('meta-q');
+  const metaPriced   = document.getElementById('meta-priced');
+  const viewTable    = document.getElementById('view-table');
+  const viewCards    = document.getElementById('view-cards');
+  const tableScroll  = document.getElementById('table-scroll');
+  const cardsGrid    = document.getElementById('cards-grid');
+  const toggleBtns   = document.querySelectorAll('.view-toggle button');
+
+  let lastItems = [];
+  let lastQuery = '';
+  let lastSort  = 'default';
+  let currentView = 'table';
+  let bestPriceUrls = new Set(); // URLs of the 3 cheapest items (regardless of current sort)
+
+  function escapeHTML(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function setStatus(state, text) {
+    status.dataset.state = state;
+    status.textContent = text;
+  }
+
+  function setLoading(loading) {
+    runBtn.classList.toggle('loading', loading);
+    runBtn.disabled = loading;
+    exportBtn.disabled = loading || lastItems.length === 0;
+    form.q.disabled = loading;
+    form.sort.disabled = loading;
+  }
+
+  const fmtPHP = (n) => Number.isFinite(n)
+    ? '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })
+    : null;
+
+  function computeBestPriceUrls(items) {
+    const priced = items.filter((it) => Number.isFinite(it.price));
+    priced.sort((a, b) => a.price - b.price);
+    return new Set(priced.slice(0, 3).map((it) => it.url));
+  }
+
+  function bestRankFor(item) {
+    if (!bestPriceUrls.has(item.url)) return 0;
+    // Find the 1-3 ordering among priced items
+    const priced = lastItems.filter((it) => Number.isFinite(it.price)).sort((a, b) => a.price - b.price);
+    const idx = priced.findIndex((it) => it.url === item.url);
+    return idx >= 0 && idx < 3 ? idx + 1 : 0;
+  }
+
+  function sortedItems() {
+    const arr = [...lastItems];
+    if (lastSort === 'price-asc') {
+      arr.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+    } else if (lastSort === 'price-desc') {
+      arr.sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
+    } else if (lastSort === 'name') {
+      arr.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return arr;
+  }
+
+  function renderEmpty(target, message, hint, progress) {
+    target.innerHTML = `
+      <div class="empty">
+        <strong>${escapeHTML(message)}</strong>
+        ${hint ? `<span class="hint">${escapeHTML(hint)}</span>` : ''}
+        ${progress ? `<span class="progress">${escapeHTML(progress)}</span>` : ''}
+      </div>`;
+  }
+
+  function renderTable(items) {
+    if (!items.length) {
+      tableScroll.innerHTML = '';
+      renderEmpty(tableScroll, 'No products found', 'Try a different keyword.');
+      return;
+    }
+    const rows = items.map((it, i) => {
+      const rank = i + 1;
+      const best = bestRankFor(it);
+      const cls = best ? `best best-${best}` : '';
+      const badge = best ? `<span class="badge">Best price · #${best}</span>` : '';
+      const priceCell = Number.isFinite(it.price)
+        ? fmtPHP(it.price)
+        : '<span class="none">—</span>';
+      return `
+        <tr class="${cls}">
+          <td class="col-rank">${String(rank).padStart(2, '0')}</td>
+          <td class="col-name">${badge}<a href="${escapeHTML(it.url)}" target="_blank" rel="noopener noreferrer" style="color:inherit;border-bottom:1px dashed transparent" onmouseenter="this.style.borderBottomColor='var(--text-dim)'" onmouseleave="this.style.borderBottomColor='transparent'">${escapeHTML(it.name)}</a></td>
+          <td class="col-price">${priceCell}</td>
+          <td class="col-desc">${escapeHTML(it.description || '')}</td>
+          <td class="col-link"><a href="${escapeHTML(it.url)}" target="_blank" rel="noopener noreferrer">Open</a></td>
+        </tr>`;
+    }).join('');
+    tableScroll.innerHTML = `
+      <table class="results">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Product Name</th>
+            <th style="text-align:right">Price (₱)</th>
+            <th>Description</th>
+            <th style="text-align:right">Link</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  function renderCards(items) {
+    if (!items.length) {
+      cardsGrid.innerHTML = '';
+      renderEmpty(cardsGrid, 'No products found', 'Try a different keyword.');
+      return;
+    }
+    cardsGrid.innerHTML = items.map((it, i) => {
+      const rank = i + 1;
+      const best = bestRankFor(it);
+      const bestAttr = best ? `data-best="${best}"` : '';
+      const priceHTML = Number.isFinite(it.price)
+        ? `<div class="product-price">${escapeHTML(fmtPHP(it.price))}</div>`
+        : `<div class="product-price none">No price found</div>`;
+      const bestBadge = best ? `<span class="best-badge">★ Best price · #${best}</span>` : '';
+      return `
+        <article class="product" ${bestAttr}>
+          <div class="product-rank">
+            <span>№ ${String(rank).padStart(2, '0')}</span>
+            ${bestBadge}
+          </div>
+          <div class="product-name" title="${escapeHTML(it.name)}">${escapeHTML(it.name)}</div>
+          ${priceHTML}
+          <div class="product-desc">${escapeHTML(it.description || '')}</div>
+          <div class="product-actions">
+            <a class="product-link" href="${escapeHTML(it.url)}" target="_blank" rel="noopener noreferrer">View on Shopee</a>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  function renderCurrentView() {
+    const items = sortedItems();
+    if (currentView === 'table') {
+      renderTable(items);
+    } else {
+      renderCards(items);
+    }
+  }
+
+  function setView(v) {
+    currentView = v;
+    toggleBtns.forEach((b) => {
+      const on = b.dataset.view === v;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    viewTable.hidden = v !== 'table';
+    viewCards.hidden = v !== 'cards';
+    if (lastItems.length) renderCurrentView();
+  }
+
+  toggleBtns.forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
+  document.getElementById('sort').addEventListener('change', (e) => {
+    lastSort = e.target.value;
+    if (lastItems.length) renderCurrentView();
+  });
+
+  function showMeta(query, count, pricedCount) {
+    metaCount.textContent = String(count);
+    metaQ.textContent = query;
+    metaPriced.textContent = String(pricedCount);
+    toolbar.hidden = false;
+  }
+
+  function csvEscape(v) {
+    const s = String(v ?? '');
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function downloadCSV() {
+    if (!lastItems.length) return;
+    const items = sortedItems();
+    const header = ['Rank', 'Name', 'Price', 'URL'];
+    const lines = [header.join(',')];
+    items.forEach((it, i) => {
+      lines.push([
+        i + 1,
+        it.name,
+        Number.isFinite(it.price) ? it.price : '',
+        it.url,
+      ].map(csvEscape).join(','));
+    });
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const ts   = new Date().toISOString().replace(/[:.]/g, '-');
+    const slug = lastQuery.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/(^-|-$)/g, '') || 'shopee';
+    a.href = url;
+    a.download = `shopee-${slug}-${ts}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function runSearch(e) {
+    e.preventDefault();
+    const q = form.q.value.trim();
+    if (!q) {
+      setStatus('error', 'Keyword required');
+      form.q.focus();
+      return;
+    }
+
+    setStatus('running', 'Searching Shopee…');
+    setLoading(true);
+    toolbar.hidden = true;
+    if (currentView === 'table') {
+      renderEmpty(tableScroll, 'Loading products…', `q="${q}"`, 'Firecrawl SERP search · usually 5–15 seconds');
+    } else {
+      renderEmpty(cardsGrid, 'Loading products…', `q="${q}"`, 'Firecrawl SERP search · usually 5–15 seconds');
+    }
+
+    try {
+      const params = new URLSearchParams({ q });
+      const res = await fetch('/api/shopee/search?' + params.toString());
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = json?.error || `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+
+      lastItems = Array.isArray(json.items) ? json.items : [];
+      lastQuery = q;
+      bestPriceUrls = computeBestPriceUrls(lastItems);
+      const priced = lastItems.filter((it) => Number.isFinite(it.price)).length;
+      showMeta(q, lastItems.length, priced);
+      renderCurrentView();
+      setStatus('completed', `${lastItems.length} products`);
+      exportBtn.disabled = lastItems.length === 0;
+    } catch (err) {
+      lastItems = [];
+      bestPriceUrls = new Set();
+      toolbar.hidden = true;
+      if (currentView === 'table') renderEmpty(tableScroll, 'Search failed', err.message || 'Unknown error');
+      else renderEmpty(cardsGrid, 'Search failed', err.message || 'Unknown error');
+      setStatus('error', 'Failed');
+      exportBtn.disabled = true;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  form.addEventListener('submit', runSearch);
+  exportBtn.addEventListener('click', downloadCSV);
+</script>
+
+</body>
+</html>

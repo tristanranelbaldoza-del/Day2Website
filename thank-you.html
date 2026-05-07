@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thank you — Tester.io</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      background-color: #0E0A03;
+      background-image:
+        radial-gradient(ellipse 70% 55% at 50% -10%, rgba(230,185,121,0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 45% at 12% 80%, rgba(198,165,89,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 45% at 88% 80%, rgba(230,185,121,0.08) 0%, transparent 60%);
+      background-attachment: fixed;
+      color: #f5ead6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.7;
+    }
+
+    .gold-text {
+      background: linear-gradient(135deg, #C6A559 0%, #E6B979 50%, #C6A559 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .ty-card {
+      position: relative;
+      z-index: 1;
+      max-width: 560px;
+      width: 100%;
+      text-align: center;
+      padding: 56px 36px;
+      background: linear-gradient(160deg, rgba(24,16,5,0.97) 0%, rgba(12,8,2,0.99) 100%);
+      border: 1px solid rgba(198,165,89,0.18);
+      border-radius: 24px;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.55), 0 0 0 1px rgba(198,165,89,0.05), 0 0 80px rgba(198,165,89,0.05);
+      overflow: hidden;
+      animation: ty-rise 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .ty-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #C6A559 30%, #E6B979 50%, #C6A559 70%, transparent);
+    }
+    .ty-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 90% 50% at 50% 0%, rgba(198,165,89,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    @keyframes ty-rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ty-check {
+      width: 88px; height: 88px; margin: 0 auto 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #C6A559 0%, #E6B979 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 12px 48px rgba(198,165,89,0.35), 0 0 0 8px rgba(198,165,89,0.08);
+      position: relative;
+    }
+    .ty-check svg { animation: ty-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    @keyframes ty-pop {
+      0%   { opacity: 0; transform: scale(0.5); }
+      60%  { opacity: 1; transform: scale(1.08); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .ty-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 18px;
+      background: rgba(198,165,89,0.08);
+      border: 1px solid rgba(198,165,89,0.28);
+      border-radius: 100px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: #C6A559;
+      margin-bottom: 22px;
+    }
+    .ty-title {
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+    .ty-body {
+      color: rgba(245,234,214,0.75);
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 420px;
+      margin: 0 auto 32px;
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #C6A559 0%, #E6B979 60%, #C6A559 100%);
+      background-size: 200% 200%;
+      color: #0E0A03;
+      font-weight: 700; font-size: 14px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border-radius: 6px; border: none; cursor: pointer;
+      text-decoration: none;
+      transition: background-position 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  box-shadow 0.2s ease;
+      box-shadow: 0 4px 20px rgba(198, 165, 89, 0.35), 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .btn-primary:hover { background-position: right center; transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(198,165,89,0.5), 0 2px 8px rgba(0,0,0,0.5); }
+    .btn-primary:focus-visible { outline: 2px solid #E6B979; outline-offset: 3px; }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: rgba(245,234,214,0.55);
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 6px;
+      transition: color 0.2s ease;
+    }
+    .btn-ghost:hover { color: #E6B979; }
+  </style>
+</head>
+<body>
+
+  <main class="ty-card" role="status" aria-live="polite">
+    <div class="ty-check" aria-hidden="true">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none"
+           stroke="#0E0A03" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+
+    <span class="ty-label">
+      <span style="width:6px;height:6px;border-radius:50%;background:#E6B979;"></span>
+      Message received
+    </span>
+
+    <h1 class="ty-title">Thanks — we've got your <span class="gold-text">message.</span></h1>
+    <p class="ty-body">
+      A human on our team will reply within one business day.
+      In the meantime, feel free to poke around the rest of the site.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <a href="/#contact" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Return to chat
+      </a>
+      <a href="/" class="btn-ghost">
+        Back to home
+      </a>
+      <a href="/#features" class="btn-ghost">
+        Explore features →
+      </a>
+    </div>
+  </main>
+
+</body>
+</html>

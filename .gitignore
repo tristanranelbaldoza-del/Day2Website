@@ -5,7 +5,72 @@ temporary screenshots/
 # Local tooling (portable ffmpeg binary, ~91 MB, macOS-specific)
 .tools/
 
+# Node dependencies (lockfile + package.json are tracked; node_modules isn't)
+node_modules/
+
 # Local env secrets
 .env
 .env.*
 !.env.example
+
+# Service-account / OAuth credentials (never commit these)
+**/credentials.json
+**/token.json
+**/token.json.bak*
+.mcp.json
+
+# Claude Code / agent caches (machine-local, not source)
+.agents/
+.superpowers/
+
+# Personal debugging screenshots, not site assets
+Screenshots by me/
+
+# Python virtualenvs (anywhere in the tree)
+venv/
+.venv/
+**/venv/
+**/.venv/
+**/__pycache__/
+*.pyc
+
+# Other-project working directories that share this folder
+# (kept local — not part of the Tester.io site)
+W2D5/
+morning-briefing/
+trend-finder/
+watch-ad/
+tester-watch-ad/
+data-cli/
+coding/
+images/generated/
+"Youtube Analyst"/reports/
+.tmp/
+node_modules/
+
+# Spec / agent / brand drafts that live in this folder but aren't site source
+*.code-workspace
+brand-voice.md
+brand-guidelines.md
+competitive-analysis.md
+content-calendar-week.md
+firecrawl-cheatsheet.md
+blotato-jobs.md
+day2-block2-posts.md
+moodboard.md
+pawprint-carousel.md
+dailyremote-landing-spec.json
+skills-lock.json
+"CLAUDE WAT.md"
+
+# Editor / OS
+*.log
+excalidraw.log
+
+# Local contact-form fallback log (used when Google Sheets isn't configured)
+contact-submissions.log.jsonl
+
+# Playwright — generated artifacts, not source
+test-results/
+playwright-report/
+playwright/.cache/
